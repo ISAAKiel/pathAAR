@@ -131,17 +131,42 @@ repath <- function(df, sgdf, x = 1, y = 2){
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 #' @examples
+#' # Crating Test Data Randomly
+#' testmatrix <- data.frame(x = abs(rnorm(100)*50), y = abs(rnorm(100)*50))
+#' # Setting geographical frame
+#' xmin    <- 0
+#' xmax    <- max(testmatrix$x)
+#' ymin    <- 0
+#' ymax    <- max(testmatrix$y)
+#' ext_ai <- extent(xmin, xmax, ymin, ymax)
 #' 
+#' sv <- (xmax-xmin)/(ymax-ymin)
+#' rw     <- 10   # width of raster defined in m
+#' 
+#' rows  <- round((ymax-ymin)/rw, 0) + 1                                    
+#' colums <- round((xmax-xmin)/rw, 0) + 1                                      
+#' v <- cbind(1:(colums*rows))                                              
+#' df <- data.frame(v)                                                         
+#' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
+#' sgdf    <- sp::SpatialGridDataFrame(gt, df)
+#' 
+#' pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2], 
+#'                        window = spatstat::owin(
+#'                        xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
+#'                        yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
+#'                        unitname="m"))
+#'                        
+#' base_kde <- makestatkde(pppm, sgdf=sgdf, df=testmatrix, x=1, y=2, num=length(df[,1]))
 #'
 #' @export
 
-makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2){
+makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2, num){
   sd1 <- sd1gen(pppm)
   sd1 <- sd1[[1]]
   stest <- 0
   if(stest != sd1) {
     base_kde <- sgdf
-    for (i in seq(base_kde@data$v)){
+    for (i in 1:num){
       pdist <- cbind(sp::coordinates(base_kde)[i,1],
                      sp::coordinates(base_kde)[i,2],df[,x],df[,y])
       base_kde@data$v[i]<- sum(apply(pdist,1,gau1,sd=sd1))
@@ -164,9 +189,35 @@ makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2){
 #' @return list containg two numeric  
 #'
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 #' @examples
+#' # Crating Test Data Randomly
+#' testmatrix <- data.frame(x = abs(rnorm(100)*50), y = abs(rnorm(100)*50))
+#' # Setting geographical frame
+#' xmin    <- 0
+#' xmax    <- max(testmatrix$x)
+#' ymin    <- 0
+#' ymax    <- max(testmatrix$y)
+#' ext_ai <- extent(xmin, xmax, ymin, ymax)
 #' 
+#' sv <- (xmax-xmin)/(ymax-ymin)
+#' rw     <- 10   # width of raster defined in m
+#' 
+#' rows  <- round((ymax-ymin)/rw, 0) + 1                                    
+#' colums <- round((xmax-xmin)/rw, 0) + 1                                      
+#' v <- cbind(1:(colums*rows))                                              
+#' df <- data.frame(v)                                                         
+#' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
+#' sgdf    <- sp::SpatialGridDataFrame(gt, df)
+#' 
+#' pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2], 
+#'                        window = spatstat::owin(
+#'                        xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
+#'                        yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
+#'                        unitname="m"))
+#'                        
+#' f_sd1 <- sd1gen(pppm)
 #'
 #' @export
 
@@ -176,3 +227,50 @@ sd1gen <- function(pppm, f_sd1 = 4) {
   sd1 <- list(sd1, nn)
   return(sd1)
 }
+
+
+#' Factor defining size of first Kernel
+#' 
+#' factor defining size of the first kernel, which generate the stucture of dynamic kernel
+#' 
+#' @title gau1
+#' 
+#' @param x numeric, vector 
+#' @param sd numeric, standard deviation
+#'  
+#' 
+#' @return density value of normal distribution
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' 
+#' @examples
+#'  
+#'  x <- c(2,4,1,5,7,8)
+#'  sd <- mean(x)
+#'  gau1(x, sd)
+#'
+#' @export
+
+gau1   <- function(x, sd){
+  stats::dnorm(edist(x), mean=0, sd=sd)
+  } 
+
+#' Euclidian Distance in multidimensional space
+#' 
+#' Calculates the euclidian distance in a multidimensional space
+#' 
+#' @title edist
+#' 
+#' @param x numeric
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' 
+#' @examples
+#'  
+#'  x <- c(2,4,1,5,7,8)
+#'  edist(x)
+#' 
+
+edist  <- function(x){
+  sqrt((x[1] - x[3])^2 + ((x[2] - x[4])^2))
+  } 
