@@ -1,18 +1,18 @@
 #' Reconstructing Empirical Pathes
 #' 
-#' description of function
+#' The `repath` function will calculate density ridges out of the location from 
+#' path associated features.
 #' 
 #' @title repath
 #' 
-#' @param df
-#' @param sgdf
-#' 
+#' @param df data frame, containing coordinates of path associated features
+#' @param sgdf SpatialGridDataFrame, same extent then area of interest
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
 #'  
-#' 
-#' @return a list containing a graph object of classes tidygraph ("tbl_graph") resp. igraph ("igraph") and the cultural distance matrix.
-#'         NOTE: The output igraph object contains zeros for display purpose. The cultural distance matrix (cult_dist_matr) is correct, containing NA for missing values.  
+#' @return list, first object "KDE" is a raster object of Kernel Density Estimation, 
+#'               second object "ras_dens_ridges" coordinates of density ridges
+#'           
 #'
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
@@ -47,13 +47,11 @@ repath <- function(df, sgdf, x = 1, y = 2, rw){
     d1 <- max(base_kde@data$v)
     a  <- -(d2*f1-d1*f2)/(d1-d2)
     b  <- (f1-f2)/(d1-d2)
-    factor <- function(x){a+b*x} # linear function to scale density values 
-    fsd2 <- factor(base_kde@data$v) 
+    fsd2 <- factor(base_kde@data$v,a,b) 
     sd2 <- fsd2*nn  # scaled density values multiplied by nearest neighbourhood distance
     a  <- -(d1*f3-d2*f4)/(d2-d1)
     b  <- (f3-f4)/(d2-d1)
-    factor_i <- function(x){a+b*x} # linear function to scale density values 
-    fint <- factor_i(base_kde@data$v)
+    fint <- factor_i(base_kde@data$v,a,b)
     
     dyn_kde <- sgdf
     
@@ -218,8 +216,8 @@ makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2, num){
 #' @export
 
 sd1gen <- function(pppm, f_sd1 = 4) {
-  sd1  <- f_sd1*mean(nndist(pppm))
-  nn <- mean(nndist(pppm))
+  sd1  <- f_sd1*mean(spatstat::nndist(pppm))
+  nn <- mean(spatstat::nndist(pppm))
   sd1 <- list(sd1, nn)
   return(sd1)
 }
@@ -316,12 +314,6 @@ kernel.par <- function(xp,s,int){
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
-#' @examples
-#'  
-#'  x <- c(2,4,1,5,7,8)
-#'  edist(x)
-#'
-
 
 kernel1d <- function(x,kp){
   d <- edist(x)
@@ -336,3 +328,39 @@ kernel1d <- function(x,kp){
   y <- y*int
   return(y)
 }
+
+
+#' linear function to scale density values
+#' 
+#' Description
+#' 
+#' @title factor
+#' 
+#' @param x 
+#' @param a
+#' @param b
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+
+factor <- function(x,a,b){
+  y <- a+b*x
+  return(y)
+} 
+
+#' linear function to scale density values
+#' 
+#' Description
+#' 
+#' @title factor_i
+#' 
+#' @param x 
+#' @param a
+#' @param b
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+
+
+factor_i <- function(x,a,b){
+  y <- a+b*x
+  return(y)
+  } 
