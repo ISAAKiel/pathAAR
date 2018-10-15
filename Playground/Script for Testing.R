@@ -35,6 +35,9 @@ gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
 sgdf    <- sp::SpatialGridDataFrame(gt, df) # Grid wird projeziert
 
 
+PATH <- repath(df=testmatrix, sgdf, rw=rw)
+
+
 # This should be done by the repath Function later!
 pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2], 
                       window = spatstat::owin(
@@ -46,27 +49,26 @@ pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2],
 base_kde <- makestatkde(pppm, sgdf=sgdf, df=testmatrix, x=1, y=2, num=length(df[,1]))
 
 
-iter   <- 2
-tresh  <- 0.05     # treshold, to delete paths in areas with low 
-#    density values (KDE), meaning calculation 
-#    artefacts 
-f_sd1  <- 4        # factor defining size of the first kernel,
-#    which generates the stucture of dynamic 
-#    kernel
-f1     <- 0.2      # factor defining the minimum border of dynamic 
-#    kernel (raster width) f1*mean(nn)  ## 0.2
-f2     <- 0.4      # factor defining the maximum border of dynamic 
-#    kernel f2*mean(nn)
-f3     <- 0.5      # minimal intensity of Kernel
-f4     <- 1        # maximal intensity of Kernel
-s      <- -0.3     # Kernelparameter: incline starting from point 1
-de     <- 0.7      # hight of additional kernel peak
-sw     <- 12       # width of picture, cm
-mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
-xp     <- 750      # Kernelparameter: x-value of point 1
-
-PATH <- repath(base_kde, sgdf)
 
 
-dyn_KDE <- repath()
+PATH <- repath(df=testmatrix, sgdf)
 
+
+# iter   <- 2
+# tresh  <- 0.05     # treshold, to delete paths in areas with low 
+# #    density values (KDE), meaning calculation 
+# #    artefacts 
+# f_sd1  <- 4        # factor defining size of the first kernel,
+# #    which generates the stucture of dynamic 
+# #    kernel
+# f1     <- 0.2      # factor defining the minimum border of dynamic 
+# #    kernel (raster width) f1*mean(nn)  ## 0.2
+# f2     <- 0.4      # factor defining the maximum border of dynamic 
+# #    kernel f2*mean(nn)
+# f3     <- 0.5      # minimal intensity of Kernel
+# f4     <- 1        # maximal intensity of Kernel
+# s      <- -0.3     # Kernelparameter: incline starting from point 1
+# de     <- 0.7      # hight of additional kernel peak
+# sw     <- 12       # width of picture, cm
+# mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
+# xp     <- 750      # Kernelparameter: x-value of point 1

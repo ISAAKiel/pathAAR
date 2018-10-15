@@ -22,7 +22,7 @@
 #'
 #' @export 
 
-repath <- function(df, sgdf, x = 1, y = 2){
+repath <- function(df, sgdf, x = 1, y = 2, rw){
   
   pppm <- spatstat::ppp(df[,1], df[,2], 
                          window = spatstat::owin(
@@ -30,20 +30,16 @@ repath <- function(df, sgdf, x = 1, y = 2){
                            yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
                            unitname="m"))
   f_sd1 <- sd1gen(pppm)
-  base_kde <- makestatkde(f_sd1[[1]], sgdf, df)
-  #iter <- 2
-  #rw     <- 500   # width of raster defined in m
-  #tresh  <- 0.05  # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
-  #f_sd1  <- 4     # factor defining size if the first kernel, which generate the stucture of dynamic kernel
-  #f1     <- 0.2      # factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
-  #f2     <- 0.4      # factor defining the maximum border of dynamic kernel f2*mean(nn)
-  #f3     <- 0.5      # Minimalinentitt des Kernels
-  #f4     <- 1        # Maximalinentit des Kernels
-  #s      <- -0.3     # Kernelparameter: incline starting from ponit 1
-  #de     <- 0.7      # hight of additional kernell peak
-  #sw     <- 12       # width of picture, cm
-  #mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
-  #xp <- 750     # Kernelparameter: x-wert   von Punkt 1
+  num <- length(sgdf@data$v)
+  base_kde <- makestatkde(pppm, f_sd1[[1]], sgdf, df, x = 1, y = 2, num=num)
+  iter  <- 2
+  tresh  <- 0.05  # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+  f1     <- 0.2      # factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
+  f2     <- 0.4      # factor defining the maximum border of dynamic kernel f2*mean(nn)
+  f3     <- 0.5      # minimal intensity of Kernel
+  f4     <- 1        # maximal intensity of Kernel
+  s      <- -0.3     # Kernelparameter: incline starting from ponit 1
+  mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
   nn <- f_sd1[[2]]
   for(i  in 1:iter) {
     
@@ -51,12 +47,12 @@ repath <- function(df, sgdf, x = 1, y = 2){
     d1 <- max(base_kde@data$v)
     a  <- -(d2*f1-d1*f2)/(d1-d2)
     b  <- (f1-f2)/(d1-d2)
-    factor <- function(x){a+b*x}
-    fsd2 <- factor(base_kde@data$v)
-    sd2 <- fsd2*nn
+    factor <- function(x){a+b*x} # linear function to scale density values 
+    fsd2 <- factor(base_kde@data$v) 
+    sd2 <- fsd2*nn  # scaled density values multiplied by nearest neighbourhood distance
     a  <- -(d1*f3-d2*f4)/(d2-d1)
     b  <- (f3-f4)/(d2-d1)
-    factor_i <- function(x){a+b*x}
+    factor_i <- function(x){a+b*x} # linear function to scale density values 
     fint <- factor_i(base_kde@data$v)
     
     dyn_kde <- sgdf
@@ -65,7 +61,7 @@ repath <- function(df, sgdf, x = 1, y = 2){
       sdi <- sd2[i]
       finti <- fint[i]
       kerpar <- kernel.par(sdi,s,finti)
-      pdist <- cbind(sp::coordinates(dyn_kde)[i,1],sp::coordinates(dyn_kde)[i,2],ppp_g$x[],ppp_g$y[])
+      pdist <- cbind(sp::coordinates(dyn_kde)[i,1],sp::coordinates(dyn_kde)[i,2],pppm$x[],pppm$y[])
       dyn_kde@data$v[i]<- sum(apply(pdist,1, kernel1d ,kp=kerpar))
     }
     
@@ -273,4 +269,70 @@ gau1   <- function(x, sd){
 
 edist  <- function(x){
   sqrt((x[1] - x[3])^2 + ((x[2] - x[4])^2))
-  } 
+} 
+
+
+#' kernel.par
+#' 
+#' Description
+#' 
+#' @title kernel.par
+#' 
+#' @param xp numeric, scaled density values multiplied by nearest neighbourhood distance
+#' @param s numeric, Kernelparameter: incline starting from point 1
+#' @param int numeric, scaled density values
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' 
+#' @examples
+#'  
+#'  xp <- 6
+#'  s <- -0.3
+#'  int <- 7
+#'  kernel.par(xp,s,int)
+#'
+
+kernel.par <- function(xp,s,int){
+  x1 <- asin(-s)
+  y1 <- cos(x1)
+  x2 <- (-1/s)^0.5
+  y2 <- 1/x2
+  a <- y2-y1
+  b <- x2-x1
+  c <- x1/xp
+  return(c(xp,a,b,c,int))
+}
+
+
+
+#' KDE Function 
+#' 
+#' Description
+#' 
+#' @title kernel1d
+#' 
+#' @param x 
+#' @param kp 
+#'
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' 
+#' @examples
+#'  
+#'  x <- c(2,4,1,5,7,8)
+#'  edist(x)
+#'
+
+
+kernel1d <- function(x,kp){
+  d <- edist(x)
+  xp <- kp[1]*kp[4]
+  a  <- kp[2]
+  b  <- kp[3]
+  c  <- kp[4]
+  int  <- kp[5]
+  x <- d*c
+  if (x <= xp) {y <- cos(x) + a + (0.7-0.7*x/xp)} # 0,7 -> hight of additional kernell peak
+  if (d > xp)  {y <- 1/(x + b)}
+  y <- y*int
+  return(y)
+}
