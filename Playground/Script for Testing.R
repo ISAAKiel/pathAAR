@@ -6,6 +6,7 @@ library(spdep)
 library(maptools)
 
 source("R/repath.R")
+source("R/theoPath.R")
 
 # Crating Test Data Randomly
 testmatrix <- data.frame(
@@ -14,6 +15,10 @@ testmatrix <- data.frame(
 )
 
 #plot(testmatrix$x, testmatrix$y)
+
+maxima <- localMax(testmatrix, r=0.5)
+
+plot(maxima@coords[,1] , maxima@coords[,2] )
 
 # Setting geographical frame
 xmin    <- 0
