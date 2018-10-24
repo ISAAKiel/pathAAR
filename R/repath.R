@@ -3,7 +3,7 @@
 #' The `repath` function will calculate density ridges out of the location from 
 #' path associated features.
 #' 
-#' @title repath
+#' @title recon_path
 #' 
 #' @param df data frame, containing coordinates of path associated features
 #' @param sgdf SpatialGridDataFrame, same extent then area of interest
@@ -22,7 +22,7 @@
 #'
 #' @export 
 
-repath <- function(df, sgdf, x = 1, y = 2, rw){
+recon_path <- function(df, sgdf, x = 1, y = 2, rw){
   
   pppm <- spatstat::ppp(df[,1], df[,2], 
                          window = spatstat::owin(
