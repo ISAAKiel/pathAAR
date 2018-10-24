@@ -1,12 +1,12 @@
 # pathAAR
 R Package to reconstruct paths using archaeological monuments, model parameters of infrastructure and evaluate those parameters
 
-Archaeological remains of roads or infrastructure are rarley found, especially in earlier epochs. Usually, most premodern paths have been country lanes, which might be paved when needed. Hence, their preservation is linked to specific conditions, like waterlocked environements. Solidly constrcuted roads, as the Roman Empire erected across europe, are exeptionally in their preservation, construction, purpose and planing. 
-But, monuments situated next to a paths - landmarks - are more likely to be preserved and recovered. Those landmarks can be medieval border stones, premodern burial mounds or neolithic gallery graves. The choose of a path associated feature depends on region, culture and epoch. 
+Archaeological remains of roads or infrastructure are rarely found, especially in earlier epochs. Usually, most premodern paths have been country lanes, which might be paved when needed. Hence, their preservation is linked to specific conditions, like waterlogged environments. Solidly constructed roads, as the Roman Empire erected across Europe, are special in their preservation, construction, purpose and planning. 
+But, monuments situated next to paths - landmarks - are more likely to be preserved and recovered. Those landmarks can be medieval border stones, premodern burial mounds or neolithic gallery graves. The choice of a path associated feature depends on region, culture and epoch. 
 
-`pathAAR` is designed to reconstruct paths next to the location of so called path associated features using a Kernel Density Approach.  
+`pathAAR` is designed to reconstruct paths next to the location of the so-called path associated features using a Kernel Density Approach.  
 
-Additionally, using `pathAAR` enables you to modell certain parameters likely to be influencial for systems of infrastructure. Wheter a pedestrian walk, the use of a vehicule, avoding certain areas or prefering others influenced the location of a path can be modelled, tested and evaluated. Selecting and defining parameters needs to be done by the user, depending on region, culture and epoch!
+Additionally, using `pathAAR` enables you to model certain parameters likely to be influential for systems of infrastructure. Whether a pedestrian, the use of a vehicle, avoiding certain areas or preferring others influenced the location of a path can be modelled, tested and evaluated. Selecting and defining parameters needs to be done by the user, depending on region, culture and epoch!
 
 
 
