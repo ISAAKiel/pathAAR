@@ -1,27 +1,67 @@
-#' Titel of Function
+#' Calculating a Delauny triangulation and preparing coordinates for rWalk loops
 #' 
-#' The `name` function will calculate density ridges out of the location from 
-#' path associated features.
+#' In absence of known contemporary nodes, like settlements, denser monument
+#' locations can be used to reconstruct nodes of infrastructre. This function
+#' will use the Kernel Density Approach combined with a moving window, in 
+#' order to detect nodes in areas with less monuments (from a global perspective).
 #' 
-#' @title name
+#' @title theo_del
 #' 
-#' @param df data frame, containing coordinates of path associated features
-#' @param sgdf SpatialGridDataFrame, same extent then area of interest
+#' @param maxima
+#' @param win 
 #'  
-#' @return list, first object "KDE" is a raster object of Kernel Density Estimation, 
-#'               second object "ras_dens_ridges" coordinates of density ridges
+#' @return 
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
-#' @examples
-#' 
-#'
-#' @export 
 
-hello <- function() {
-  print("Hello, world!")
+theo_del <- function(maxima, win){
+  library("sp")
+  # Delaunay Triangulation to detect possible Connections
+  ppp_max <- spatstat::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for delauny function
+  max_del <- spatstat::delaunay(ppp_max)
+  sp_con <- as(max_del, "SpatialPolygons") #converting tess object to a polygon
+  sl_con <- as(sp_con, "SpatialLines")
+  con <- ggplot2::fortify(sp_con) # converting polygon to a data frame
+  coord_from <- con[which(con$order<4),]
+  coord_from <- coord_from[,c(1,2)]
+  coord_to <- con[which(con$order>1),]
+  coord_to <- coord_to[,c(1,2)]
+  con <- cbind(coord_from, coord_to) # creating new dataframe with coordinates of connections
+  colnames(con) <- c("xFrom", "yFrom", "xTo", "yTo")
+  # loop to detect doubled connections
+  for(i in 1:length(con[,1])){ 
+    delete <- (id=1:length(con[,1])) #creating a dummy column
+    con <- cbind(con, delete) #adding a dummy column
+    a <- which(con$xFrom[i] == con$xTo[c(1:length(con[,1]))] & con$yFrom[i] == con$yTo[c(1:length(con[,1]))] ) #detecting point(i) FROM in TO Columns
+    b <- which(con$xTo[i] == con$xFrom[c(1:length(con[,1]))] & con$yTo[i] == con$yFrom[c(1:length(con[,1]))] ) #detecting point(i) TO in FROM Columns
+    c <- intersect(a,b) # intersecting, to detect doubeled connections
+    con  <- con[!con$delete %in% c ,]
+    con <- con[,c(1:4)]
+  }
+  
+  # Preparing data to use in loops (is needed to trim the raster object inside the loop properly)
+  con$xmin <- ifelse(con$xFrom < con$xTo, con$xFrom, con$xTo) 
+  con$xmax <- ifelse(con$xFrom > con$xTo, con$xFrom, con$xTo) 
+  con$ymin <- ifelse(con$yFrom < con$yTo, con$yFrom, con$yTo)
+  con$ymax <- ifelse(con$yFrom > con$yTo, con$yFrom, con$yTo) 
+  # Deleting long conection, which is represented by others but to long for a rWalk calculation
+  for(i in 1:length(con[,1])){
+    con$dis[i] <- round(sqrt(((con$xmax[i]-con$xmin[i])^2)+((con$ymax[i]-con$ymin[i])^2)))
+  }
+  
+  delete <- (id=1:length(con[,1])) #creating a dummy column
+  con <- cbind(con, delete)
+  a <- which(con$dis >=100000)
+  con <- con[!con$delete %in% a ,]
+  
+  CONN <- list(con, sl_con)
+  plot(sl_con)
+  return(CONN)
+  
 }
+
 
 
 #' Local Centers of Infrastructure from Monument Location
@@ -97,7 +137,7 @@ localMax <- function(df, x=1, y=2, r){
 
 #' Calculates Slope Values out of Elevation
 #' 
-#' The `drive_i` function will calculate a cost surfcae, where costs refer to the use of
+#' The `hdiff` function will calculate a cost surfcae, where costs refer to the use of
 #' wheeled vehicules with a critical slope value of 8%. Here the 
 #' adapted function published by Herzog 2012 is used.
 #' 
