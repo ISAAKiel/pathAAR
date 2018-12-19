@@ -36,7 +36,7 @@ hello <- function() {
 #' @param df data frame, containing coordinates of path associated features
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
-#' @param r numeric, size of moving window in meter, default = 15000
+#' @param r numeric, size of moving window in meter, default = 5000
 #'  
 #' @return SpatialPoints 
 #'           
