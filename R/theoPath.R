@@ -113,7 +113,8 @@ localMax <- function(df, x=1, y=2, r){
     indxy <- intersect(indx,indy)
     if (max(ras_dens@data[indxy,1]) == z & z > s)
     {indmax[length(indmax)+1] <- i}
-    if (stats::sd(ras_dens@data[indxy,1]) == 0)
+    #if (stats::sd(ras_dens@data[indxy,1]) == 0) #An dieser stelle rausgehauen - stattdessen ras_dens@data$v ?
+    if (stats::sd(ras_dens@data$v) == 0)
     {indplan[length(indplan)+1] <- i}
     rm(indx)
     rm(indy)
