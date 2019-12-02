@@ -1,11 +1,11 @@
 Package: pathARR
 Type: Package
 Title: Pathes in Archaeology
-Version: 0.1.0
+Version: 0.2.0
 Author: Authors@R: c(
   person("Franziska", "Faupel", email = "ffaupel@ufg.uni-kiel.de", role = c("aut")),
   person("Oliver", "Nakoinz", email = "oliver.nakoinz.i@gmail.com", role = c("aut")),
-)
+  person("Hendrik", "Raese", email = "h.raese@ufg.uni-kiel.de", role = c("aut")))
 Maintainer: Franziska Faupel <ffaupel@ufg.uni-kiel.de>
 Description: R Package to reconstruct pathes using archaeological monuments, modell parameters of infrastructure and evaluate those parameters
     Use four spaces when indenting paragraphs within the Description.
@@ -15,8 +15,15 @@ LazyData: true
 VignetteBuilder: knitr
 Depends: R (>= 2.10),    
     magrittr
-Imports: bookdown,
-    dplyr,
-    knitr,
-    rmarkdown,
-    testthat
+Imports: 
+	raster,
+    gdistance,
+    sp,
+    spatstat,
+    ggplot2,
+	maptools
+Suggests:
+	rgdal,
+	spdep,
+	testthat
+	

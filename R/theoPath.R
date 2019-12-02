@@ -1,3 +1,124 @@
+#' Theoretical Paths using cost functions definded by Herzog 2012
+#' 
+#' If there are no possible nodes of path network known, the `theoPath_herzog` function 
+#' can be used to re Based on a cost surface created using the cost functions defined
+#' by I. Herzog (2012), 
+#'
+#' 
+#' @title theoPath_herzog
+#' 
+#' @param emp_ai
+#' @param ras_ai 
+#'  
+#' @return 
+#'           
+#' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' 
+
+theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
+  
+  ras_M1 <- emp_ai
+  # Loop to calculate rWalk for all connections
+  #-------------------------------------------------------------------------------
+  for(i in 1:length(con[,1])){
+    xmin <- con[i,5] - p 
+    xmax <- con[i,6] + p
+    ymin <- con[i,7] - p
+    ymax <- con[i,8] + p
+    ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
+    tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
+    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE)  
+    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8)                     # Setting up a adjacent matrix using 8 directions to construct a transition Layer to store cost values calculated in the next step. Attention: If 
+    cost_walki <- slope                                                   # storing Geo-Information in later TransitionLayer Object
+    
+    # Different Cost Functions
+    if(method == "walk_i"){
+      cost_walki[adj] <- walk_i(slope[adj])                          # Calculating cost surface using different functions/equation
+    }
+    
+    if(method == "drive_i"){
+      cost_walki[adj] <- drive_i(slope[adj])                          # Calculating cost surface using different functions/equation
+    }
+    
+    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE)                       # conductivity=cost/dist; time=1/conductivity
+    from <- data.frame(con[i, c(1,2)])
+    to <- data.frame(con[i, c(3,4)])
+    sp::coordinates(from)=~xFrom+yFrom; sp::coordinates(to)=~xTo+yTo; 
+    random <- gdistance::passage(cost_walki,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
+    ras_M1 <- raster::mosaic(ras_M1, random, fun=max) # summing up expactation of single rWalk connections
+  }
+  
+  plot(ras_M1)
+  
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walki)
+  
+  return(ras_M1)
+  
+}
+
+#===============================================================================
+# Theoretical Paths with additional parameter and 2nd version with factor *1000
+#===============================================================================
+
+theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta){
+  
+  ras_M3 <- emp_ai
+  ras_M31000 <- emp_ai
+  # Loop to calculate rWalk for all connections
+  for(i in 1:length(con[,1])){
+    ## Setting area for randomwalk analysis of each connection
+    xmin <- con[i,5] - p 
+    xmax <- con[i,6] + p
+    ymin <- con[i,7] - p
+    ymax <- con[i,8] + p
+    from <- data.frame(con[i, c(1,2)])
+    to <- data.frame(con[i, c(3,4)])
+    sp::coordinates(from)=~xFrom+yFrom; sp::coordinates(to)=~xTo+yTo; 
+    ## Calculating a cost surface using viewwhed parameters
+    ras_v <- raster::crop(ras_view, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
+    adj_v <- raster::adjacent(ras_v, cells=1:raster::ncell(ras_v), directions=8)
+    cost_v <- gdistance::transition(ras_v, transitionFunction=max, directions=8, symm=TRUE)
+    cost_v <- gdistance::geoCorrection(cost_v, type="r", scl=TRUE)
+    cost_v[adj_v] <- max(cost_v[adj_v])
+    ## Calculatting a cost surface using Elevation parameters
+    ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
+    tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
+    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE)
+    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8)# Setting up an adjacency matrix using 8 directions to construct a transition Layer to store cost values calculated in the next step
+    cost_walki <- slope                                                   # storing Geo-Information in later TransitionLayer Object
+    
+    # Different Cost Functions
+    if(method == "walk_i"){
+      cost_walki[adj] <- walk_i(slope[adj])                          # Calculating cost surface using different functions/equation
+    }
+    
+    if(method == "drive_i"){
+      cost_walki[adj] <- drive_i(slope[adj])                          # Calculating cost surface using different functions/equation
+    }
+    
+    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE)                       # conductivity=cost/dist; time=1/conductivity
+    ## Adding view-costs to elevation based cost surface
+    cost_walkia <- cost_walki + (cost_v*0.1)
+    cost_walkib <- cost_walki + (cost_v *100)
+    random <- gdistance::passage(cost_walkia,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
+    ras_M3 <- raster::mosaic(ras_M3, random, fun=max) # summing up expectation of single rWalk connections
+    random <- gdistance::passage(cost_walkib,from, to, theta = theta*10, totalNet="total") # rWalk: expectation for a passage of a cell
+    ras_M31000 <- raster::mosaic(ras_M31000, random, fun=max) # summing up expectation of single rWalk connections
+  }
+  
+  plot(ras_M3)
+  plot(ras_M31000)
+  
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walkia); rm(cost_walkib); rm(ras_v); rm(adj_v); rm(cost_v)
+  
+  FAC <- list("param"=ras_M3, "param_1000"=ras_M31000)
+  
+  return(FAC)
+  
+}
+
+
 #' Calculating a Delauny triangulation and preparing coordinates for rWalk loops
 #' 
 #' In absence of known contemporary nodes, like settlements, denser monument
@@ -84,7 +205,7 @@ theo_del <- function(maxima, win){
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 
-localMax <- function(df, x=1, y=2, r){
+localMax <- function(df, x=1, y=2, r=5000){
   sp_g <- sp::SpatialPoints(cbind(df[,1], df[,2]))
   # calculating static KDE
   bb <- sp::bbox(sp_g) # setting bondingbox for KDE
@@ -113,13 +234,14 @@ localMax <- function(df, x=1, y=2, r){
     indxy <- intersect(indx,indy)
     if (max(ras_dens@data[indxy,1]) == z & z > s)
     {indmax[length(indmax)+1] <- i}
-    if (stats::sd(ras_dens@data[indxy,1]) == 0)
+    if (stats::sd(ras_dens@data[indxy,1]) == 0) #An dieser stelle rausgehauen - stattdessen ras_dens@data$v ?
+    if (stats::sd(ras_dens@data$v) == 0)
     {indplan[length(indplan)+1] <- i}
     rm(indx)
     rm(indy)
     rm(indxy)
   }
-  # exracting coordinates of local density maxmia
+  # extracting coordinates of local density maxmia
   mn      <- length(indmax)
   mx      <- sp::coordinates(ras_dens)[indmax,1]
   my      <- sp::coordinates(ras_dens)[indmax,2]
@@ -157,11 +279,11 @@ hdiff <- function(x){
 
 #' Costs for Wheeled Vehicules 
 #' 
-#' The `drive_i` function will calculate a cost surfcae, where costs refer to the use of
-#' wheeled vehicules with a critical slope value of 8%. Here the 
+#' The `drive_i` function will calculate a cost surface, where costs refer to the use of
+#' wheeled vehicles with a critical slope value of 8%. Here the 
 #' adapted function published by Herzog 2012 is used.
 #' 
-#' Note: As gdistance uses resitor instead of cost, the function creates inverse costs
+#' Note: As gdistance uses resistor instead of cost, the function creates inverse costs
 #' 
 #' @title drive_i
 #' 
@@ -180,7 +302,7 @@ drive_i <- function(s){
 
 #' Costs for Energy Expenditure for Pedestrians
 #' 
-#' The `name` function will calculate a cost surfcae, where costs refer to energy
+#' The `walk_i` function will calculate a cost surface, where costs refer to energy
 #' expenditure for a pedestrian. Initially published by Llobera & ... Here the 
 #' adapted function published by Herzog 2012 is used.
 #' 
