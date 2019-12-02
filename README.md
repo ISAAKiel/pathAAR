@@ -19,7 +19,7 @@ Installation
 
 Please note, this package is still work in progress! 
 
-`pathAAR::recon_path` is functioning!
+`pathAAR::repath` is functioning!
 
 Licence
 -------
