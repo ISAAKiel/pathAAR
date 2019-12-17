@@ -4,6 +4,8 @@ library(rgdal)
 library(spatstat) 
 library(spdep) 
 library(maptools)
+library(broom)
+library(sf)
 
 source("R/repath.R")
 source("R/theoPath.R")
@@ -16,7 +18,7 @@ testmatrix <- data.frame(
 
 #plot(testmatrix$x, testmatrix$y)
 
-maxima <- localMax(testmatrix, r=15)
+maxima <- localMax(testmatrix, r=10)
 
 plot(maxima@coords[,1] , maxima@coords[,2] )
 
@@ -43,18 +45,20 @@ win <- owin(c(xmin, xmax),c(ymin, ymax))
 
 PATH <- repath(df=testmatrix, sgdf, rw=rw)
 
-theo <- theo_del(maxima,win)
+theo_con <- theo_del(maxima,win)
+theo_con2 <- theo_del(maxima,win)
 
-sgdf2 <- sgdf 
+sgdf@data$v <- sample((50:56), length(sgdf2@data$v), replace=T)
 
-sgdf2@data$v <- sample((50:56), length(sgdf2@data$v), replace=T)
+ras_sgdf <- raster(sgdf)
+ras_empty <- ras_sgdf
+ras_empty@data@values <- NA
+moep <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_sgdf,method="drive_i",theo_con[[1]], theta=0.001, p=5)
+plot(sl_con)
 
-ras_sgdf2 <- raster(sgdf2)
-moep <- theoPath_herzog(ras_sgdf2,ras_sgdf2,method="drive_i",theo[[1]], theta=0.1, 5)
-
-emp_ai <- ras_sgdf2
-ras_ai <- ras_sgdf2 
+emp_ai <- ras_empty
+ras_ai <- ras_sgdf 
 p <- 5
-con <- theo[[1]] 
-theta <- 0.1
+con <- theo_con[[1]] 
+theta <- 0.001
 method <- "drive_i"
