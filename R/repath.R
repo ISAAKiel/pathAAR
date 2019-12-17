@@ -38,8 +38,8 @@ repath <- function(df, sgdf, x = 1, y = 2, rw){
   f2     <- 0.4      # factor defining the maximum border of dynamic kernel f2*mean(nn)
   f3     <- 0.5      # minimal intensity of Kernel
   f4     <- 1        # maximal intensity of Kernel
-  s      <- -0.3     # Kernelparameter: incline starting from ponit 1
-  mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
+  s      <- -0.3     # Kernelparameter: incline starting from point 1
+  mwin   <- 9        # Moving-window-size for ridge detection (4,9,16)
   nn <- f_sd1[[2]]
   for(i  in 1:iter) {
     
