@@ -1,15 +1,15 @@
 #' Theoretical Paths using cost functions definded by Herzog 2012
 #' 
 #' If there are no possible nodes of path network known, the `theoPath_herzog` function 
-#' can be used to re Based on a cost surface created using the cost functions defined
-#' by I. Herzog (2012), 
+#' can be used to re based on a cost surface created using the cost functions defined
+#' by I. Herzog (2012). 
 #'
 #' 
 #' @title theoPath_herzog
 #' 
-#' @param emp_ai
-#' @param ras_ai
-#' @param con
+#' @param emp_ai RasterLayer, empty raster for storage of the results
+#' @param ras_ai RasterLayer, raster with elevation values
+#' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
@@ -113,9 +113,79 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
   
 }
 
-#===============================================================================
-# Theoretical Paths with additional parameter and 2nd version with factor *1000
-#===============================================================================
+
+
+#' Theoretical Paths using cost functions defined by Herzog 2012 with additional 
+#' 
+#' If there are no possible nodes of path network known, the `theoPath_herzog` function 
+#' can be used to re Based on a cost surface created using the cost functions defined
+#' by I. Herzog (2012), 
+#'
+#' 
+#' @title theoPath_param
+#' 
+#' @param emp_ai RasterLayer, empty raster for storage of the results
+#' @param ras_ai RasterLayer, raster with elevation values
+#' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
+#' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
+#' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
+#' @param p numeric, buffer zone around rWalk rasters, used in loop
+#'  
+#' @return raster object, with values of summed up expectations of single rWalk connections
+#'           
+#' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' @author Hendrik Raese <\email{h.raese@@ufg.uni-kiel.de}>
+#' 
+#' @examples
+#' 
+#' set.seed(123)
+#' 
+#' # Creating random test data 
+#' testmatrix <- data.frame(
+#'  x = abs(rnorm(100)*50), 
+#'  y = abs(rnorm(100)*50))
+#'
+#' maxima <- localMax(testmatrix, r=15)
+#' 
+#' # Setting geographical frame
+#' xmin    <- 0
+#' xmax    <- max(testmatrix$x)
+#' ymin    <- 0
+#' ymax    <- max(testmatrix$y)
+#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' 
+#' # Coordinates used to set frame corner for definition of the aspect ratio
+#' sv <- (xmax-xmin)/(ymax-ymin)
+#' rw     <- 5   # width of raster defined in m
+#' 
+#' # Definition of frame expansion and defining frame                              
+# 'rows  <- round((ymax-ymin)/rw, 0) + 1 ; rows                                    
+#' colums <- round((xmax-xmin)/rw, 0) + 1 ; colums                                     
+#' v <- cbind(1:(colums*rows))                                              
+#' df <- data.frame(v)                                                         
+#' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
+#' sgdf    <- sp::SpatialGridDataFrame(gt, df)
+#' 
+#' # Initialising observation window for theoretical connections
+#' win <- owin(c(xmin, xmax),c(ymin, ymax))
+#' 
+#' # calculating theoretical connections via delaunay triangulation
+#' theo_con <- theo_del(maxima,win)
+#' 
+#' # Setting up an artificial elevation map with random values
+#' emap <- sgdf
+#' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
+#' ras_emap <- raster(emap)
+#' 
+#' # Initialising empty raster to store summed up expectations of single rWalk connections
+#' ras_empty <- ras_emap
+#' ras_empty@data@values <- NA
+#' 
+#' # Run the function with chosen parameters for method, theta and p
+#' theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
+#'
+#'@export
 
 theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta){
   
@@ -248,7 +318,7 @@ localMax <- function(df, x=1, y=2, r=5000){
 }
 
 
-#' Calculating a Delauny triangulation and preparing coordinates for rWalk loops
+#' Calculating a Delaunay triangulation and preparing coordinates for rWalk loops
 #' 
 #' In absence of known contemporary nodes, like settlements, denser monument
 #' locations can be used to reconstruct nodes of infrastructre. This function
