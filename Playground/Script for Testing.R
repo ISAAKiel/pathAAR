@@ -4,8 +4,10 @@ library(rgdal)
 library(spatstat) 
 library(spdep) 
 library(maptools)
-library(broom)
+#library(broom)
 library(sf)
+#library(foreach)
+library(rgrass7) # requires an installation of GRASS GIS 7.x
 
 source("R/repath.R")
 source("R/theoPath.R")
@@ -48,13 +50,13 @@ PATH <- repath(df=testmatrix, sgdf, rw=rw)
 theo_con <- theo_del(maxima,win)
 theo_con2 <- theo_del(maxima,win)
 
-sgdf@data$v <- sample((50:56), length(sgdf2@data$v), replace=T)
+sgdf@data$v <- sample((50:56), length(sgdf@data$v), replace=T)
 
 ras_sgdf <- raster(sgdf)
 ras_empty <- ras_sgdf
 ras_empty@data@values <- NA
 moep <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_sgdf,method="drive_i",theo_con[[1]], theta=0.001, p=5)
-plot(sl_con)
+#plot(sl_con)
 
 emp_ai <- ras_empty
 ras_ai <- ras_sgdf 
@@ -62,3 +64,82 @@ p <- 5
 con <- theo_con[[1]] 
 theta <- 0.001
 method <- "drive_i"
+
+## Create cumulative viewshed (based on script by D. Knitter)
+
+tmp <- tempdir()
+
+# use random elevation map for viewshed calculation
+ras_sgdf2 <- ras_sgdf
+
+# Prepare coordinate vectors/object for viewshed calculation
+
+coords_list <- rasterToPoints(x = ras_sgdf2)
+
+str(coords_list)
+
+
+# transform data from RasterFile to GridTopology
+rf <- raster::writeRaster(ras_sgdf2, filename=file.path(tmp, "test.tif"), format="GTiff", overwrite=TRUE)
+
+dem <- readGDAL(file.path(tmp, "test.tif"))
+
+# set arbitrary projected crs for raster
+proj4string(dem) <- CRS("+init=epsg:3587")
+
+# initialise empty raster
+view <- dem
+view@data$band1 <- 0
+
+
+## parseGRASS("r.viewshed")
+
+# enforce use of sp for working with GRASS 
+use_sp()
+
+
+# Set up GRASS and load data
+
+loc <- initGRASS("C:/Program Files/GRASS GIS 7.8", home=tmp, mapset = "PERMANENT", override = TRUE)
+
+execGRASS("g.proj", flags = c("c"), parameters = list(proj4=dem@proj4string@projargs))              
+
+writeRAST(x = dem,
+          vname="dem",
+          flags = c("overwrite")
+)            
+
+writeRAST(x = view,
+          vname=paste0("view_all"),
+          flags = c("overwrite")
+)               
+
+execGRASS("g.region",
+          parameters = list(raster = "dem",
+                            res = as.character(dem@grid@cellsize[1])),
+          flags = c("p")
+)
+
+# Start of the cumulative viewshed analysis 
+
+cumview_dir <- for (i in 1:length(coords_list[,1])){   
+  
+  execGRASS("r.viewshed",
+            flags = c("overwrite","b", "quiet"),
+            parameters = list(input = "dem",
+                              output = "view_tmp",
+                              coordinates = cbind(coords_list[i,1],coords_list[i,2]),
+                              max_distance = 15,
+                              memory = 5000)
+  )
+  
+  execGRASS("r.mapcalc",
+            parameters = list(expression = paste("'view_all' = 'view_all' + view_tmp")),
+            flags = c("overwrite", "quiet")
+  )
+}
+
+cumview_dir <-   readRAST("view_all")
+
+plot(cumview_dir)
+
