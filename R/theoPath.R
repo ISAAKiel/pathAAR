@@ -115,7 +115,7 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 
 
 
-#' Theoretical Paths using cost functions defined by Herzog 2012 with additional 
+#' Theoretical Paths using cost functions defined by Herzog 2012 with additional parameter
 #' 
 #' If there are no possible nodes of path network known, the `theoPath_herzog` function 
 #' can be used to re Based on a cost surface created using the cost functions defined
@@ -182,12 +182,18 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 #' ras_empty <- ras_emap
 #' ras_empty@data@values <- NA
 #' 
+#' # Friction Raster for Prefering lowlands:
+#' para <- ras_sgdf
+#' para@data@values[which(para@data@values <0 )] <- 0
+#' para@data@values <- para@data@values/ max(para@data@values)
+#' plot(para)
+#' 
 #' # Run the function with chosen parameters for method, theta and p
 #' theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
 #'
 #'@export
 
-theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta){
+theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
   
   ras_M3 <- emp_ai
   ras_M31000 <- emp_ai
@@ -201,29 +207,29 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta){
     from <- data.frame(con[i, c(1,2)])
     to <- data.frame(con[i, c(3,4)])
     sp::coordinates(from)=~xFrom+yFrom; sp::coordinates(to)=~xTo+yTo; 
-    ## Calculating a cost surface using viewwhed parameters
-    ras_v <- raster::crop(ras_view, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
+    ## Calculating a cost surface using viewshed parameters
+    ras_v <- raster::crop(ras_para, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     adj_v <- raster::adjacent(ras_v, cells=1:raster::ncell(ras_v), directions=8)
     cost_v <- gdistance::transition(ras_v, transitionFunction=max, directions=8, symm=TRUE)
     cost_v <- gdistance::geoCorrection(cost_v, type="r", scl=TRUE)
     cost_v[adj_v] <- max(cost_v[adj_v])
-    ## Calculatting a cost surface using Elevation parameters
+    ## Calculating a cost surface using Elevation parameters
     ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
     slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE)
-    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8)# Setting up an adjacency matrix using 8 directions to construct a transition Layer to store cost values calculated in the next step
-    cost_walki <- slope                                                   # storing Geo-Information in later TransitionLayer Object
+    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8) # Setting up an adjacency matrix using 8 directions to construct a transition Layer to store cost values calculated in the next step
+    cost_walki <- slope # storing Geo-Information in later TransitionLayer Object
     
     # Different Cost Functions
     if(method == "walk_i"){
-      cost_walki[adj] <- walk_i(slope[adj])                          # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equation
     }
     
     if(method == "drive_i"){
-      cost_walki[adj] <- drive_i(slope[adj])                          # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equation
     }
     
-    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE)                       # conductivity=cost/dist; time=1/conductivity
+    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
     ## Adding view-costs to elevation based cost surface
     cost_walkia <- cost_walki + (cost_v*0.1)
     cost_walkib <- cost_walki + (cost_v *100)
