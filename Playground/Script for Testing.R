@@ -65,81 +65,11 @@ con <- theo_con[[1]]
 theta <- 0.001
 method <- "drive_i"
 
-## Create cumulative viewshed (based on script by D. Knitter)
+# Friction Raster for Prefering lowlands:
+para <- ras_sgdf
+para@data@values[which(para@data@values <0 )] <- 0
+para@data@values <- para@data@values/ max(para@data@values)
+plot(para)
 
-tmp <- tempdir()
-
-# use random elevation map for viewshed calculation
-ras_sgdf2 <- ras_sgdf
-
-# Prepare coordinate vectors/object for viewshed calculation
-
-coords_list <- rasterToPoints(x = ras_sgdf2)
-
-str(coords_list)
-
-
-# transform data from RasterFile to GridTopology
-rf <- raster::writeRaster(ras_sgdf2, filename=file.path(tmp, "test.tif"), format="GTiff", overwrite=TRUE)
-
-dem <- readGDAL(file.path(tmp, "test.tif"))
-
-# set arbitrary projected crs for raster
-proj4string(dem) <- CRS("+init=epsg:3587")
-
-# initialise empty raster
-view <- dem
-view@data$band1 <- 0
-
-
-## parseGRASS("r.viewshed")
-
-# enforce use of sp for working with GRASS 
-use_sp()
-
-
-# Set up GRASS and load data
-
-loc <- initGRASS("C:/Program Files/GRASS GIS 7.8", home=tmp, mapset = "PERMANENT", override = TRUE)
-
-execGRASS("g.proj", flags = c("c"), parameters = list(proj4=dem@proj4string@projargs))              
-
-writeRAST(x = dem,
-          vname="dem",
-          flags = c("overwrite")
-)            
-
-writeRAST(x = view,
-          vname=paste0("view_all"),
-          flags = c("overwrite")
-)               
-
-execGRASS("g.region",
-          parameters = list(raster = "dem",
-                            res = as.character(dem@grid@cellsize[1])),
-          flags = c("p")
-)
-
-# Start of the cumulative viewshed analysis 
-
-cumview_dir <- for (i in 1:length(coords_list[,1])){   
-  
-  execGRASS("r.viewshed",
-            flags = c("overwrite","b", "quiet"),
-            parameters = list(input = "dem",
-                              output = "view_tmp",
-                              coordinates = cbind(coords_list[i,1],coords_list[i,2]),
-                              max_distance = 15,
-                              memory = 5000)
-  )
-  
-  execGRASS("r.mapcalc",
-            parameters = list(expression = paste("'view_all' = 'view_all' + view_tmp")),
-            flags = c("overwrite", "quiet")
-  )
-}
-
-cumview_dir <-   readRAST("view_all")
-
-plot(cumview_dir)
+theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_ai, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
 
