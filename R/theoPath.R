@@ -1,8 +1,6 @@
 #' Theoretical Paths using cost functions definded by Herzog 2012
 #' 
-#' If there are no possible nodes of path network known, the `theoPath_herzog` function 
-#' can be used to re based on a cost surface created using the cost functions defined
-#' by I. Herzog (2012). 
+#' If there are no actual parts of a path network known, the `theoPath_herzog` function can be used to reconstruct pathways based on randomised shortest paths connecting known regions with higher densities of sites, e.g. monuments. An underlying cost surface is created by using the cost functions defined by I. Herzog (2012) either for walking or driving. This function is a useful step in the evaluation of reconstructed paths. 
 #'
 #' 
 #' @title theoPath_herzog
@@ -43,8 +41,8 @@
 #' rw     <- 5   # width of raster defined in m
 #' 
 #' # Definition of frame expansion and defining frame                              
-# 'rows  <- round((ymax-ymin)/rw, 0) + 1 ; rows                                    
-#' colums <- round((xmax-xmin)/rw, 0) + 1 ; colums                                     
+# 'rows  <- round((ymax-ymin)/rw, 0) + 1                                  
+#' colums <- round((xmax-xmin)/rw, 0) + 1                                     
 #' v <- cbind(1:(colums*rows))                                              
 #' df <- data.frame(v)                                                         
 #' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
@@ -83,18 +81,18 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
     ymin <- con[i,7] - p
     ymax <- con[i,8] + p
     ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
-    tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
-    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE) # Geographic correction is needed because the TransitionLayer was created with >4 directions. For random walks there should be an North-South and East-West correction which calls for type="r" correction 
-    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8) # Setting up an adjacency matrix using 8 directions to construct a transition layer to store cost values calculated in the next step. Attention: If 
+    tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE) # Attention: If directions > 4 is selected, there will be a need for a geographical correction because the orthogonal and diagonal distances between all connected cells are not the same (1 vs. sqr(2))! 
+    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE) # Geographic correction is needed because the TransitionLayer was created with >4 directions. For random walks there should be an North-South and an East-West correction which calls for type="r" correction, while least-cost distances on a LonLat basis can be corrected with type="c". 
+    adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8) # Setting up an adjacency matrix using 8 directions to construct a transition layer to store cost values calculated in the next step. 
     cost_walki <- slope # storing Geo-Information in later TransitionLayer Object
     
     # Different Cost Functions
     if(method == "walk_i"){
-      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     if(method == "drive_i"){
-      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
@@ -115,23 +113,22 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 
 
 
-#' Theoretical Paths using cost functions defined by Herzog 2012 with additional parameter
+#' Theoretical Paths using cost functions defined by Herzog 2012 with additional cost parameter
 #' 
-#' If there are no possible nodes of path network known, the `theoPath_herzog` function 
-#' can be used to re Based on a cost surface created using the cost functions defined
-#' by I. Herzog (2012), 
+#' If there are no actual parts of a path network known, the `theoPath_herzog_param` function can be used to reconstruct pathways based on randomised shortest paths connecting known regions with higher densities of sites, e.g. monuments. An underlying cost surface is created by using the cost functions defined by I. Herzog (2012) either for walking or driving. By supplying an additional parameter (visibility, friction costs, etc.), hypotheses on the influence of different variables can be tested. This function is a useful step in the evaluation of reconstructed paths. 
 #'
 #' 
 #' @title theoPath_param
 #' 
 #' @param emp_ai RasterLayer, empty raster for storage of the results
 #' @param ras_ai RasterLayer, raster with elevation values
+#' @param ras_para RasterLayer, raster with additionalvalues (visibility, friction costs, etc.)
 #' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
 #'  
-#' @return raster object, with values of summed up expectations of single rWalk connections
+#' @return List, two RasterLayer with values of summed up expectations of single rWalk connections. The item param with 0.1x the influence of the supplied parameter and param_1000 with 100x the influence of the supplied parameter and 10x the value of theta.
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
@@ -160,8 +157,8 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 #' rw     <- 5   # width of raster defined in m
 #' 
 #' # Definition of frame expansion and defining frame                              
-# 'rows  <- round((ymax-ymin)/rw, 0) + 1 ; rows                                    
-#' colums <- round((xmax-xmin)/rw, 0) + 1 ; colums                                     
+# 'rows  <- round((ymax-ymin)/rw, 0) + 1                                    
+#' colums <- round((xmax-xmin)/rw, 0) + 1                                     
 #' v <- cbind(1:(colums*rows))                                              
 #' df <- data.frame(v)                                                         
 #' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
@@ -199,7 +196,7 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
   ras_M31000 <- emp_ai
   # Loop to calculate rWalk for all connections
   for(i in 1:length(con[,1])){
-    ## Setting area for randomwalk analysis of each connection
+    ## Setting area for random walk analysis of each connection
     xmin <- con[i,5] - p 
     xmax <- con[i,6] + p
     ymin <- con[i,7] - p
@@ -207,12 +204,12 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
     from <- data.frame(con[i, c(1,2)])
     to <- data.frame(con[i, c(3,4)])
     sp::coordinates(from)=~xFrom+yFrom; sp::coordinates(to)=~xTo+yTo; 
-    ## Calculating a cost surface using viewshed parameters
-    ras_v <- raster::crop(ras_para, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
-    adj_v <- raster::adjacent(ras_v, cells=1:raster::ncell(ras_v), directions=8)
-    cost_v <- gdistance::transition(ras_v, transitionFunction=max, directions=8, symm=TRUE)
-    cost_v <- gdistance::geoCorrection(cost_v, type="r", scl=TRUE)
-    cost_v[adj_v] <- max(cost_v[adj_v])
+    ## Calculating a cost surface using provided additional parameter
+    ras_par <- raster::crop(ras_para, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
+    adj_par <- raster::adjacent(ras_par, cells=1:raster::ncell(ras_par), directions=8)
+    cost_par <- gdistance::transition(ras_par, transitionFunction=max, directions=8, symm=TRUE)
+    cost_par <- gdistance::geoCorrection(cost_par, type="r", scl=TRUE)
+    cost_par[adj_par] <- max(cost_par[adj_par])
     ## Calculating a cost surface using Elevation parameters
     ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
@@ -222,17 +219,17 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
     
     # Different Cost Functions
     if(method == "walk_i"){
-      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     if(method == "drive_i"){
-      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equation
+      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
-    ## Adding view-costs to elevation based cost surface
-    cost_walkia <- cost_walki + (cost_v*0.1)
-    cost_walkib <- cost_walki + (cost_v *100)
+    ## Adding costs of the additional parameter to the elevation based cost surface
+    cost_walkia <- cost_walki + (cost_par*0.1)
+    cost_walkib <- cost_walki + (cost_par *100)
     random <- gdistance::passage(cost_walkia,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
     ras_M3 <- raster::mosaic(ras_M3, random, fun=max) # summing up expectation of single rWalk connections
     random <- gdistance::passage(cost_walkib,from, to, theta = theta*10, totalNet="total") # rWalk: expectation for a passage of a cell
@@ -242,7 +239,7 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
   plot(ras_M3)
   plot(ras_M31000)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walkia); rm(cost_walkib); rm(ras_v); rm(adj_v); rm(cost_v)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walkia); rm(cost_walkib); rm(ras_par); rm(adj_par); rm(cost_par)
   
   FAC <- list("param"=ras_M3, "param_1000"=ras_M31000)
   
@@ -254,7 +251,7 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
 
 #' Local Centers of Infrastructure from Monument Location
 #' 
-#' In absence of known contemporary nodes, like settlements, denser monument
+#' In absence of known contemporary nodes, like settlements, the density of monument
 #' locations can be used to reconstruct nodes of infrastructre. This function
 #' will use the Kernel Density Approach combined with a moving window, in 
 #' order to detect nodes in areas with less monuments (from a global perspective).
