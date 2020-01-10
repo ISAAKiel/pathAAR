@@ -7,7 +7,6 @@ library(maptools)
 #library(broom)
 library(sf)
 #library(foreach)
-library(rgrass7) # requires an installation of GRASS GIS 7.x
 
 source("R/repath.R")
 source("R/theoPath.R")
@@ -33,7 +32,9 @@ ext_ai <- extent(xmin, xmax, ymin, ymax)
 
 # Coordinates to set frame corner to define aspect ratio                      
 sv <- (xmax-xmin)/(ymax-ymin)
-rw     <- 5   # width of raster defined in m # Rasterweite angepasst -> darf nicht zu grob sein, sonst haut es einen in der Funktion theoPath_herzog bei "tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)" raus -> Zellen dürfen nicht direkt nebeneinander liegen
+rw     <- 5   # width of raster defined in m 
+# Rasterweite angepasst -> darf nicht zu grob sein, sonst haut es einen in der Funktion theoPath_herzog bei "tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)" raus -> Zellen dürfen nicht direkt nebeneinander liegen
+
 
 # Defintion of frame expantion and defining frame                              
 rows  <- round((ymax-ymin)/rw, 0) + 1 ; rows                                    
@@ -72,4 +73,6 @@ para@data@values <- para@data@values/ max(para@data@values)
 plot(para)
 
 theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_ai, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
+
+
 
