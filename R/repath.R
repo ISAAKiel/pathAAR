@@ -33,7 +33,7 @@ repath <- function(df, sgdf, x = 1, y = 2, rw){
   num <- length(sgdf@data$v)
   base_kde <- makestatkde(pppm, f_sd1[[1]], sgdf, df, x = 1, y = 2, num=num)
   iter  <- 2
-  tresh  <- 0.05  # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+  tresh  <- 0.05     # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
   f1     <- 0.2      # factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
   f2     <- 0.4      # factor defining the maximum border of dynamic kernel f2*mean(nn)
   f3     <- 0.5      # minimal intensity of Kernel
@@ -172,7 +172,7 @@ makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2, num){
 
 #' Factor defining size of first Kernel
 #' 
-#' factor defining size of the first kernel, which generate the stucture of dynamic kernel
+#' Factor defining size of the first Kernel, which generates the stucture of dynamic Kernel
 #' 
 #' @title sd1gen
 #' 
@@ -323,14 +323,14 @@ kernel1d <- function(x,kp){
   c  <- kp[4]
   int  <- kp[5]
   x <- d*c
-  if (x <= xp) {y <- cos(x) + a + (0.7-0.7*x/xp)} # 0,7 -> hight of additional kernell peak
+  if (x <= xp) {y <- cos(x) + a + (0.7-0.7*x/xp)} # 0,7 -> height of additional kernel peak
   if (d > xp)  {y <- 1/(x + b)}
   y <- y*int
   return(y)
 }
 
 
-#' linear function to scale density values
+#' Linear function to scale density values
 #' 
 #' Description
 #' 
@@ -347,7 +347,7 @@ factor <- function(x,a,b){
   return(y)
 } 
 
-#' linear function to scale density values
+#' Linear function to scale density values
 #' 
 #' Description
 #' 
