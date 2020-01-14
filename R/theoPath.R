@@ -11,6 +11,7 @@
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
+#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
 #'  
 #' @return raster object, with values of summed up expectations of single rWalk connections
 #'           
@@ -64,13 +65,13 @@
 #' ras_empty@data@values <- NA
 #' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5)
+#' theo_run <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 #'
 #'@export
 
 
 
-theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
+theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
   
   ras_M1 <- emp_ai
   # Loop to calculate rWalk for all connections
@@ -82,30 +83,30 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
     ymax <- con[i,8] + p
     ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE) # Attention: If directions > 4 is selected, there will be a need for a geographical correction because the orthogonal and diagonal distances between all connected cells are not the same (1 vs. sqr(2))! 
-    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE) # Geographic correction is needed because the TransitionLayer was created with >4 directions. For random walks there should be an North-South and an East-West correction which calls for type="r" correction, while least-cost distances on a LonLat basis can be corrected with type="c". 
+    slope <- gdistance::geoCorrection(tran_hdiff, type=type, scl=TRUE) # Geographic correction is needed because the TransitionLayer was created with >4 directions. For random walks there should be an North-South and an East-West correction which calls for type="r" correction, while least-cost distances on a LonLat basis can be corrected with type="c". 
     adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8) # Setting up an adjacency matrix using 8 directions to construct a transition layer to store cost values calculated in the next step. 
-    cost_walki <- slope # storing Geo-Information in later TransitionLayer Object
+    cost_method <- slope # storing Geo-Information in later TransitionLayer Object
     
     # Different Cost Functions
     if(method == "walk_i"){
-      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
+      cost_method[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     if(method == "drive_i"){
-      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
+      cost_method[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
-    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
+    cost_method <- gdistance::geoCorrection(cost_method, type=type, scl=TRUE) # conductivity=cost/dist; time=1/conductivity
     from <- data.frame(con[i, c(1,2)])
     to <- data.frame(con[i, c(3,4)])
     sp::coordinates(from)=~xFrom+yFrom; sp::coordinates(to)=~xTo+yTo; 
-    random <- gdistance::passage(cost_walki,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
+    random <- gdistance::passage(cost_method,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
     ras_M1 <- raster::mosaic(ras_M1, random, fun=max) # summing up expectation of single rWalk connections
   }
   
   plot(ras_M1)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walki)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_method)
   
   return(ras_M1)
   
@@ -127,6 +128,7 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
+#' #' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
 #'  
 #' @return List, two RasterLayer with values of summed up expectations of single rWalk connections. The item param with 0.1x the influence of the supplied parameter and param_1000 with 100x the influence of the supplied parameter and 10x the value of theta.
 #'           
@@ -186,11 +188,11 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p){
 #' plot(para)
 #' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
+#' theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 #'
 #'@export
 
-theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
+theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p, type="c"){
   
   ras_M3 <- emp_ai
   ras_M31000 <- emp_ai
@@ -208,38 +210,38 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p){
     ras_par <- raster::crop(ras_para, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     adj_par <- raster::adjacent(ras_par, cells=1:raster::ncell(ras_par), directions=8)
     cost_par <- gdistance::transition(ras_par, transitionFunction=max, directions=8, symm=TRUE)
-    cost_par <- gdistance::geoCorrection(cost_par, type="r", scl=TRUE)
+    cost_par <- gdistance::geoCorrection(cost_par, type=type, scl=TRUE)
     cost_par[adj_par] <- max(cost_par[adj_par])
     ## Calculating a cost surface using Elevation parameters
     ras <- raster::crop(ras_ai, raster::extent(xmin, xmax, ymin,ymax), filename= "corssings" , snap='near', overwrite=TRUE)
     tran_hdiff<- gdistance::transition(ras, transitionFunction=hdiff, directions=8, symm=TRUE)
-    slope <- gdistance::geoCorrection(tran_hdiff, type="r", scl=TRUE)
+    slope <- gdistance::geoCorrection(tran_hdiff, type=type, scl=TRUE)
     adj <- raster::adjacent(ras, cells=1:raster::ncell(ras), direction=8) # Setting up an adjacency matrix using 8 directions to construct a transition Layer to store cost values calculated in the next step
-    cost_walki <- slope # storing Geo-Information in later TransitionLayer Object
+    cost_method <- slope # storing Geo-Information in later TransitionLayer Object
     
     # Different Cost Functions
     if(method == "walk_i"){
-      cost_walki[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
+      cost_method[adj] <- walk_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
     if(method == "drive_i"){
-      cost_walki[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
+      cost_method[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
-    cost_walki <- gdistance::geoCorrection(cost_walki, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
+    cost_method <- gdistance::geoCorrection(cost_method, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
     ## Adding costs of the additional parameter to the elevation based cost surface
-    cost_walkia <- cost_walki + (cost_par*0.1)
-    cost_walkib <- cost_walki + (cost_par *100)
-    random <- gdistance::passage(cost_walkia,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
+    cost_methoda <- cost_method + (cost_par*0.1)
+    cost_methodb <- cost_method + (cost_par *100)
+    random <- gdistance::passage(cost_methoda,from, to, theta = theta, totalNet="total") # rWalk: expectation for a passage of a cell
     ras_M3 <- raster::mosaic(ras_M3, random, fun=max) # summing up expectation of single rWalk connections
-    random <- gdistance::passage(cost_walkib,from, to, theta = theta*10, totalNet="total") # rWalk: expectation for a passage of a cell
+    random <- gdistance::passage(cost_methodb,from, to, theta = theta*10, totalNet="total") # rWalk: expectation for a passage of a cell
     ras_M31000 <- raster::mosaic(ras_M31000, random, fun=max) # summing up expectation of single rWalk connections
   }
   
   plot(ras_M3)
   plot(ras_M31000)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_walkia); rm(cost_walkib); rm(ras_par); rm(adj_par); rm(cost_par)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_methoda); rm(cost_methodb); rm(ras_par); rm(adj_par); rm(cost_par)
   
   FAC <- list("param"=ras_M3, "param_1000"=ras_M31000)
   
