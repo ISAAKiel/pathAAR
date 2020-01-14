@@ -49,14 +49,13 @@ win <- owin(c(xmin, xmax),c(ymin, ymax))
 PATH <- repath(df=testmatrix, sgdf, rw=rw)
 
 theo_con <- theo_del(maxima,win)
-theo_con2 <- theo_del(maxima,win)
 
 sgdf@data$v <- sample((50:56), length(sgdf@data$v), replace=T)
 
 ras_sgdf <- raster(sgdf)
 ras_empty <- ras_sgdf
 ras_empty@data@values <- NA
-moep <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_sgdf,method="drive_i",theo_con[[1]], theta=0.001, p=5)
+moep2 <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_sgdf,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 #plot(sl_con)
 
 emp_ai <- ras_empty
@@ -72,7 +71,6 @@ para@data@values[which(para@data@values <0 )] <- 0
 para@data@values <- para@data@values/ max(para@data@values)
 plot(para)
 
-theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_ai, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5)
-
+theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_ai, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 
 
