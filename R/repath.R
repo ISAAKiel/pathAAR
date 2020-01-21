@@ -22,13 +22,13 @@
 #'
 #' @export 
 
-repath <- function(df, sgdf, x = 1, y = 2, rw){
+repath <- function(df, sgdf, x = 1, y = 2){
   
   pppm <- spatstat::ppp(df[,1], df[,2], 
-                         window = spatstat::owin(
-                           xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
-                           yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
-                           unitname="m"))
+                        window = spatstat::owin(
+                          xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
+                          yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
+                          unitname="m"))
   f_sd1 <- sd1gen(pppm)
   num <- length(sgdf@data$v)
   base_kde <- makestatkde(pppm, f_sd1[[1]], sgdf, df, x = 1, y = 2, num=num)
@@ -247,7 +247,7 @@ sd1gen <- function(pppm, f_sd1 = 4) {
 
 gau1   <- function(x, sd){
   stats::dnorm(edist(x), mean=0, sd=sd)
-  } 
+} 
 
 #' Euclidian Distance in multidimensional space
 #' 
@@ -363,4 +363,4 @@ factor <- function(x,a,b){
 factor_i <- function(x,a,b){
   y <- a+b*x
   return(y)
-  } 
+} 
