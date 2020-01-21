@@ -227,7 +227,7 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
       cost_method[adj] <- drive_i(slope[adj]) # Calculating cost surface using different functions/equations
     }
     
-    cost_method <- gdistance::geoCorrection(cost_method, type="r", scl=TRUE) # conductivity=cost/dist; time=1/conductivity
+    cost_method <- gdistance::geoCorrection(cost_method, type=type, scl=TRUE) # conductivity=cost/dist; time=1/conductivity
     ## Adding costs of the additional parameter to the elevation based cost surface
     cost_methoda <- cost_method + (cost_par*0.1)
     cost_methodb <- cost_method + (cost_par *100)
