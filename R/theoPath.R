@@ -5,7 +5,6 @@
 #' 
 #' @title theoPath_herzog
 #' 
-#' @param emp_ai RasterLayer, empty raster for storage of the results
 #' @param ras_ai RasterLayer, raster with elevation values
 #' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
@@ -60,20 +59,20 @@
 #' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
 #' ras_emap <- raster(emap)
 #' 
-#' # Initialising empty raster to store summed up expectations of single rWalk connections
-#' ras_empty <- ras_emap
-#' ras_empty@data@values <- NA
-#' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_herzog(emp_ai=ras_empty,ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
+#' theo_run <- theoPath_herzog(ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 #'
 #'@export
 
 
 
-theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
+theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
   
-  ras_M1 <- emp_ai
+  # Initialise empty raster with same extent and resolution as the elevation raster
+  valrast <- raster::readAll(ras_ai)
+  ras_M1 <- valrast
+  ras_M1@data@values <- NA
+  
   # Loop to calculate rWalk for all connections
   #-------------------------------------------------------------------------------
   for(i in 1:length(con[,1])){
@@ -106,7 +105,7 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
   
   plot(ras_M1)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_method)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_method); rm(valrast)
   
   return(ras_M1)
   
@@ -121,14 +120,13 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
 #' 
 #' @title theoPath_param
 #' 
-#' @param emp_ai RasterLayer, empty raster for storage of the results
 #' @param ras_ai RasterLayer, raster with elevation values
 #' @param ras_para RasterLayer, raster with additionalvalues (visibility, friction costs, etc.)
 #' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
-#' #' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
+#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
 #'  
 #' @return List, two RasterLayer with values of summed up expectations of single rWalk connections. The item param with 0.1x the influence of the supplied parameter and param_1000 with 100x the influence of the supplied parameter and 10x the value of theta.
 #'           
@@ -177,10 +175,6 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
 #' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
 #' ras_emap <- raster(emap)
 #' 
-#' # Initialising empty raster to store summed up expectations of single rWalk connections
-#' ras_empty <- ras_emap
-#' ras_empty@data@values <- NA
-#' 
 #' # Friction Raster for Prefering lowlands:
 #' para <- ras_sgdf
 #' para@data@values[which(para@data@values <0 )] <- 0
@@ -188,14 +182,19 @@ theoPath_herzog <- function(emp_ai, ras_ai, con, method, theta, p, type="c"){
 #' plot(para)
 #' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_param(emp_ai=ras_empty,ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
+#' theo_run <- theoPath_param(ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
 #'
 #'@export
 
-theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p, type="c"){
+theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
   
-  ras_M3 <- emp_ai
-  ras_M31000 <- emp_ai
+  # Initialise empty raster with same extent and resolution as the elevation raster
+  valrast <- raster::readAll(ras_ai)
+  ras_M3 <- valrast
+  ras_M31000 <- ras_M3
+  ras_M3@data@values <- NA
+  ras_M31000@data@values <- NA
+  
   # Loop to calculate rWalk for all connections
   for(i in 1:length(con[,1])){
     ## Setting area for random walk analysis of each connection
@@ -241,7 +240,7 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p, type
   plot(ras_M3)
   plot(ras_M31000)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_methoda); rm(cost_methodb); rm(ras_par); rm(adj_par); rm(cost_par)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_methoda); rm(cost_methodb); rm(ras_par); rm(adj_par); rm(cost_par); rm(valrast)
   
   FAC <- list("param"=ras_M3, "param_1000"=ras_M31000)
   
@@ -271,7 +270,7 @@ theoPath_param <- function(emp_ai, ras_ai, ras_para, con, method, theta, p, type
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 
-localMax <- function(df, x=1, y=2, r=5000){
+localMax <- function(df, x=1, y=2, r=5000, sw=10){
   sp_g <- sp::SpatialPoints(cbind(df[,1], df[,2]))
   # calculating static KDE
   bb <- sp::bbox(sp_g) # setting spatial bounding box for KDE
@@ -285,7 +284,7 @@ localMax <- function(df, x=1, y=2, r=5000){
   
   ras_dens@data$v[which(is.na(ras_dens@data$v))] <- 0
   m <- max(ras_dens@data$v)
-  s <- m / 10
+  s <- m / sw
   indmax <- c()
   indplan <- c()
   # moving window approach 
@@ -349,11 +348,11 @@ theo_del <- function(maxima, win){
   sp_con <- as(max_del, "SpatialPolygons") #converting tess object to a polygon
   sl_con <- as(sp_con, "SpatialLines")
   
-# according to the documentation the function fortify may be deprecated in the future, maybe it should be replaced with the appropiate function from the 'broom' package as described by ggplot2 documentation. BUT: In the broom package documentation it is stated that development of sp tidiers is halted and may be deprecated in the future. They propose changing to sf instead of sp. That would effect the whole package here...  
+  # according to the documentation the function fortify may be deprecated in the future, maybe it should be replaced with the appropiate function from the 'broom' package as described by ggplot2 documentation. BUT: In the broom package documentation it is stated that development of sp tidiers is halted and may be deprecated in the future. They propose changing to sf instead of sp. That would effect the whole package here...  
   con <- ggplot2::fortify(sp_con) # converting polygon to a data frame 
   #con <- broom::tidy(sp_con) # works with warnings and 'group' is chr instead of factor but as only order is used, that is not a problem.
   #con <- sf::st_as_sf(sp_con)  
-
+  
   coord_from <- con[which(con$order<4),]
   coord_from <- coord_from[,c(1,2)]
   coord_to <- con[which(con$order>1),]
@@ -417,7 +416,7 @@ hdiff <- function(x){
 #' 
 #' The `drive_i` function will calculate a cost surface, where costs refer to the use of
 #' wheeled vehicles with a critical slope value of 8%. Here the 
-#' adapted function published by Herzog 2012 is used.
+#' adapted function published by Herzog 2012 baesd on Llobera 2007 is used.
 #' 
 #' Note: As gdistance uses resistor instead of cost, the function creates inverse costs
 #' 
@@ -429,12 +428,13 @@ hdiff <- function(x){
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' @author Hendrik Raese <\email{h.raese@@ufg.uni-kiel.de}>
 #' 
 
 drive_i <- function(s){
-  x <- (1/(1 + (s / 8)^2))
+  x <- (1/(1 + (s / (8/100))^2))
   return(x)
-  }
+}
 
 #' Costs for Energy Expenditure for Pedestrians
 #' 
@@ -455,7 +455,7 @@ drive_i <- function(s){
 #' 
 
 walk_i <- function(s){
-   x <- 1/(1337.8 * s^6 + 278.19 * s^5 - 517.39 * s^4 - 
-        78.199 * s^3 + 93.419 * s^2 + 19.825 * s + 1.64)
-   return(x)
-   }
+  x <- 1/(1337.8 * s^6 + 278.19 * s^5 - 517.39 * s^4 - 
+            78.199 * s^3 + 93.419 * s^2 + 19.825 * s + 1.64)
+  return(x)
+}
