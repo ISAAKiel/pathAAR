@@ -309,8 +309,8 @@ kernel.par <- function(xp,s,int){
 #' 
 #' @title kernel1d
 #' 
-#' @param x 
-#' @param kp 
+#' @param x Variable
+#' @param kp Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
@@ -336,9 +336,9 @@ kernel1d <- function(x,kp){
 #' 
 #' @title factor
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 
@@ -353,9 +353,9 @@ factor <- function(x,a,b){
 #' 
 #' @title factor_i
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 

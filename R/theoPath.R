@@ -331,8 +331,8 @@ localMax <- function(df, x=1, y=2, r=5000, sw=10){
 #' 
 #' @title theo_del
 #' 
-#' @param maxima
-#' @param win 
+#' @param maxima SpatialPoints object
+#' @param win owin object
 #'  
 #' @return 
 #'           
@@ -348,7 +348,7 @@ theo_del <- function(maxima, win){
   sp_con <- as(max_del, "SpatialPolygons") #converting tess object to a polygon
   sl_con <- as(sp_con, "SpatialLines")
   
-  # according to the documentation the function fortify may be deprecated in the future, maybe it should be replaced with the appropiate function from the 'broom' package as described by ggplot2 documentation. BUT: In the broom package documentation it is stated that development of sp tidiers is halted and may be deprecated in the future. They propose changing to sf instead of sp. That would effect the whole package here...  
+  # according to the documentation the function fortify may be deprecated in the future, maybe it should be replaced with the appropriate function from the 'broom' package as described by ggplot2 documentation. BUT: In the broom package documentation it is stated that development of sp tidier is halted and may be deprecated in the future. They propose changing to sf instead of sp. That would effect the whole package here...  
   con <- ggplot2::fortify(sp_con) # converting polygon to a data frame 
   #con <- broom::tidy(sp_con) # works with warnings and 'group' is chr instead of factor but as only order is used, that is not a problem.
   #con <- sf::st_as_sf(sp_con)  
