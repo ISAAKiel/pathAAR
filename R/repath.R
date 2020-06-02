@@ -264,6 +264,7 @@ gau1   <- function(x, sd){
 #'  x <- c(2,4,1,5,7,8)
 #'  edist(x)
 #' 
+#' @export
 
 edist  <- function(x){
   sqrt((x[1] - x[3])^2 + ((x[2] - x[4])^2))
@@ -289,6 +290,7 @@ edist  <- function(x){
 #'  int <- 7
 #'  kernel.par(xp,s,int)
 #'
+#' @export
 
 kernel.par <- function(xp,s,int){
   x1 <- asin(-s)
