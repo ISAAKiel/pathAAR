@@ -17,13 +17,13 @@ theoPath_herzog(ras_ai, con, method, theta, p, type = "c")
 
 \item{p}{numeric, buffer zone around rWalk rasters, used in loop}
 
-\item{type}{chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection}
+\item{type}{chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosen. For further informations see ?gdistance::geoCorrection}
 }
 \value{
 raster object, with values of summed up expectations of single rWalk connections
 }
 \description{
-Theoretical Paths using cost functions definded by Herzog 2012
+Theoretical Paths using cost functions defined by Herzog 2012
 }
 \details{
 If there are no actual parts of a path network known, the `theoPath_herzog` function can be used to reconstruct pathways based on randomised shortest paths connecting known regions with higher densities of sites, e.g. monuments. An underlying cost surface is created by using the cost functions defined by I. Herzog (2012) either for walking or driving. This function is a useful step in the evaluation of reconstructed paths.

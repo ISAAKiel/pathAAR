@@ -19,7 +19,7 @@ Calculating a Delaunay triangulation and preparing coordinates for rWalk loops
 }
 \details{
 In absence of known contemporary nodes, like settlements, denser monument
-locations can be used to reconstruct nodes of infrastructre. This function
+locations can be used to reconstruct nodes of infrastructure. This function
 will use the Kernel Density Approach combined with a moving window, in 
 order to detect nodes in areas with less monuments (from a global perspective).
 }

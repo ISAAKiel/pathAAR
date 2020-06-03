@@ -1,4 +1,4 @@
-#' Theoretical Paths using cost functions definded by Herzog 2012
+#' Theoretical Paths using cost functions defined by Herzog 2012
 #' 
 #' If there are no actual parts of a path network known, the `theoPath_herzog` function can be used to reconstruct pathways based on randomised shortest paths connecting known regions with higher densities of sites, e.g. monuments. An underlying cost surface is created by using the cost functions defined by I. Herzog (2012) either for walking or driving. This function is a useful step in the evaluation of reconstructed paths. 
 #'
@@ -10,7 +10,7 @@
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
-#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
+#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosen. For further informations see ?gdistance::geoCorrection
 #'  
 #' @return raster object, with values of summed up expectations of single rWalk connections
 #'           
@@ -269,6 +269,7 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
+#' @export
 
 localMax <- function(df, x=1, y=2, r=5000, sw=10){
   sp_g <- sp::SpatialPoints(cbind(df[,1], df[,2]))
@@ -325,7 +326,7 @@ localMax <- function(df, x=1, y=2, r=5000, sw=10){
 #' Calculating a Delaunay triangulation and preparing coordinates for rWalk loops
 #' 
 #' In absence of known contemporary nodes, like settlements, denser monument
-#' locations can be used to reconstruct nodes of infrastructre. This function
+#' locations can be used to reconstruct nodes of infrastructure. This function
 #' will use the Kernel Density Approach combined with a moving window, in 
 #' order to detect nodes in areas with less monuments (from a global perspective).
 #' 
@@ -343,7 +344,7 @@ localMax <- function(df, x=1, y=2, r=5000, sw=10){
 theo_del <- function(maxima, win){
   library("sp")
   # Delaunay Triangulation to detect possible Connections
-  ppp_max <- spatstat::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for delauny function
+  ppp_max <- spatstat::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for Delauny function
   max_del <- spatstat::delaunay(ppp_max)
   sp_con <- as(max_del, "SpatialPolygons") #converting tess object to a polygon
   sl_con <- as(sp_con, "SpatialLines")
