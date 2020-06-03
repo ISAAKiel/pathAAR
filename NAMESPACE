@@ -3,6 +3,7 @@
 export(edist)
 export(gau1)
 export(kernel.par)
+export(localMax)
 export(makestatkde)
 export(repath)
 export(sd1gen)
