@@ -303,7 +303,7 @@ localMax <- function(df, r=5000, sw=10, pd=500){
   bb <- sp::bbox(sp_g) # setting spatial bounding box for KDE
   win <- spatstat::owin(xrange=c(bb[1,1],bb[1,2]), yrange= c(bb[2,1],bb[2,2]), unitname="m") # calculating observation window
   ppp_g <- spatstat::ppp(sp_g@coords[,1], sp_g@coords[,2], window=win)
-  dens <- density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c(((win$yrange[2]-win$yrange[1])/pd),((win$xrange[2]-win$xrange[1])/pd)), 
+  dens <- density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c((round((win$yrange[2]-win$yrange[1])/pd)),(round((win$xrange[2]-win$xrange[1])/pd))), 
                   w=win, edge=TRUE, at="pixels") # calculating static KDE
   
   sgdf_dens <- maptools::as.SpatialGridDataFrame.im(dens)
