@@ -16,18 +16,22 @@
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
-#' @author Hendrik Raese <\email{h.raese@@ufg.uni-kiel.de}>
+#' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
-#' @examples
+#' @example
 #' 
 #' set.seed(123)
 #' 
 #' # Creating random test data 
 #' testmatrix <- data.frame(
-#'  x = abs(rnorm(100)*50), 
-#'  y = abs(rnorm(100)*50))
+#'  x = abs(runif(100, 1000, 1500)), 
+#'  y = abs(runif(100, 1000, 1500)))
 #'
-#' maxima <- localMax(testmatrix, r=15)
+#' # Calculate local centres of infrastructure from monument location
+#' pd=25
+#' sw=10
+#' r=100
+#' maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 #' 
 #' # Setting geographical frame
 #' xmin    <- 0
@@ -121,7 +125,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' @title theoPath_param
 #' 
 #' @param ras_ai RasterLayer, raster with elevation values
-#' @param ras_para RasterLayer, raster with additionalvalues (visibility, friction costs, etc.)
+#' @param ras_para RasterLayer, raster with additional values (visibility, friction costs, etc.)
 #' @param con data.frame, connections of a Delaunay triangulation as a result of function theo_del or your own method
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
@@ -132,18 +136,22 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
-#' @author Hendrik Raese <\email{h.raese@@ufg.uni-kiel.de}>
+#' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
-#' @examples
+#' @example
 #' 
 #' set.seed(123)
 #' 
 #' # Creating random test data 
 #' testmatrix <- data.frame(
-#'  x = abs(rnorm(100)*50), 
-#'  y = abs(rnorm(100)*50))
+#'  x = abs(runif(100, 1000, 1500)), 
+#'  y = abs(runif(100, 1000, 1500)))
 #'
-#' maxima <- localMax(testmatrix, r=15)
+#' # Calculate local centres of infrastructure from monument location
+#' pd=25
+#' sw=10
+#' r=100
+#' maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 #' 
 #' # Setting geographical frame
 #' xmin    <- 0
@@ -175,7 +183,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
 #' ras_emap <- raster(emap)
 #' 
-#' # Friction Raster for Prefering lowlands:
+#' # Friction Raster for preferring lowlands:
 #' para <- ras_sgdf
 #' para@data@values[which(para@data@values <0 )] <- 0
 #' para@data@values <- para@data@values/ max(para@data@values)
@@ -250,42 +258,60 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
 
 
 
-#' Local Centers of Infrastructure from Monument Location
+#' Local Centres of Infrastructure from Monument Location
 #' 
 #' In absence of known contemporary nodes, like settlements, the density of monument
-#' locations can be used to reconstruct nodes of infrastructre. This function
+#' locations can be used to reconstruct nodes of infrastructure. This function
 #' will use the Kernel Density Approach combined with a moving window, in 
 #' order to detect nodes in areas with less monuments (from a global perspective).
 #' 
 #' @title localMax
 #' 
 #' @param df data frame, containing coordinates of path associated features
-#' @param x numeric, indicating column number of x coordinates
-#' @param y numeric, indicating column number of y coordinates
-#' @param r numeric, size of moving window in meter, default = 5000
+#' @param sw numeric, value used for defining threshold for defining a local maximum. A higher value means more local maxima are stored, default = 10. It's suggested not to change this parameter and instead work with the size of the moving window!
+#' @param pd numeric, dimension of pixels for intermediate raster image of the used density function in meter, default = 500
+#' @param r numeric, sets the size of moving window and sigma in the used density function in meter, default = 5000
 #'  
-#' @return SpatialPoints 
+#' @return SpatialPointsDataFrame with coordinates of local maxima
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+#' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
+#' 
+#' @example 
+#' set.seed(123)
+#'
+#' # Creating random test data 
+#' testmatrix <- data.frame(
+#'  x = abs(runif(100, 1000, 1500)), 
+#'  y = abs(runif(100, 1000, 1500)))
+#'
+#' pd=25
+#' sw=10
+#' r=100
+#' maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
+#' 
+#' # Plot the result
+#' maxima <- data.frame(maxima)
+#' ggplot() +geom_point(data= testmatrix, aes(x=x, y=y))+ geom_point(data=maxima,aes(x=mx, y=my, color="red"), shape=15, size=3, show.legend = FALSE)
 #' 
 #' @export
 
-localMax <- function(df, x=1, y=2, r=5000, sw=10){
+localMax <- function(df, r=5000, sw=10, pd=500){
   sp_g <- sp::SpatialPoints(cbind(df[,1], df[,2]))
   # calculating static KDE
   bb <- sp::bbox(sp_g) # setting spatial bounding box for KDE
   win <- spatstat::owin(xrange=c(bb[1,1],bb[1,2]), yrange= c(bb[2,1],bb[2,2]), unitname="m") # calculating observation window
   ppp_g <- spatstat::ppp(sp_g@coords[,1], sp_g@coords[,2], window=win)
-  dens <- density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c(36,56), 
-                  w=win, edge=TRUE, at="pixels") # calculating static KDE # muss die Pixelauflösung (dimyx) wirklich hardgecodet sein? Wenn ja, warum gerade diese Werte?   
+  dens <- density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c(((win$yrange[2]-win$yrange[1])/pd),((win$xrange[2]-win$xrange[1])/pd)), 
+                  w=win, edge=TRUE, at="pixels") # calculating static KDE
   
   sgdf_dens <- maptools::as.SpatialGridDataFrame.im(dens)
   ras_dens <- sgdf_dens
   
   ras_dens@data$v[which(is.na(ras_dens@data$v))] <- 0
   m <- max(ras_dens@data$v)
-  s <- m / sw
+  s <- m / sw 
   indmax <- c()
   indplan <- c()
   # moving window approach 
@@ -358,7 +384,7 @@ theo_del <- function(maxima, win){
   coord_from <- coord_from[,c(1,2)]
   coord_to <- con[which(con$order>1),]
   coord_to <- coord_to[,c(1,2)]
-  con <- cbind(coord_from, coord_to) # creating new dataframe with coordinates of connections
+  con <- cbind(coord_from, coord_to) # creating new data frame with coordinates of connections
   colnames(con) <- c("xFrom", "yFrom", "xTo", "yTo")
   # loop to detect doubled connections
   for(i in 1:length(con[,1])){ 
