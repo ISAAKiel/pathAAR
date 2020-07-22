@@ -14,18 +14,19 @@ testmatrix <- data.frame(
   y = abs(rnorm(100)*50)
 )
 
-#plot(testmatrix$x, testmatrix$y)
+# plot(testmatrix$x, testmatrix$y)
 
-maxima <- localMax(testmatrix, r=0.5)
+maxima <- localMax(testmatrix, r = 15)
+# plot(maxima@coords[,1] , maxima@coords[,2] )
 
-plot(maxima@coords[,1] , maxima@coords[,2] )
 
+# Settings needed for repath
 # Setting geographical frame
 xmin    <- 0
 xmax    <- max(testmatrix$x)
 ymin    <- 0
 ymax    <- max(testmatrix$y)
-ext_ai <- extent(xmin, xmax, ymin, ymax)
+ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 
 # Coordinates to set frame corner to define aspect ratio                      
 sv <- (xmax-xmin)/(ymax-ymin)
