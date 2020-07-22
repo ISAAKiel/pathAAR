@@ -22,24 +22,24 @@
 #'
 #' @export 
 
-repath <- function(df, sgdf, x = 1, y = 2, rw){
+repath <- function(df, sgdf, x = 1, y = 2){
   
   pppm <- spatstat::ppp(df[,1], df[,2], 
-                         window = spatstat::owin(
-                           xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
-                           yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
-                           unitname="m"))
+                        window = spatstat::owin(
+                          xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
+                          yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
+                          unitname="m"))
   f_sd1 <- sd1gen(pppm)
   num <- length(sgdf@data$v)
   base_kde <- makestatkde(pppm, f_sd1[[1]], sgdf, df, x = 1, y = 2, num=num)
   iter  <- 2
-  tresh  <- 0.05  # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+  tresh  <- 0.05     # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
   f1     <- 0.2      # factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
   f2     <- 0.4      # factor defining the maximum border of dynamic kernel f2*mean(nn)
   f3     <- 0.5      # minimal intensity of Kernel
   f4     <- 1        # maximal intensity of Kernel
-  s      <- -0.3     # Kernelparameter: incline starting from ponit 1
-  mwin   <- 9        # Mowing-window-size for ridge detection (4,9,16)
+  s      <- -0.3     # Kernelparameter: incline starting from point 1
+  mwin   <- 9        # Moving-window-size for ridge detection (4,9,16)
   nn <- f_sd1[[2]]
   for(i  in 1:iter) {
     
@@ -172,7 +172,7 @@ makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2, num){
 
 #' Factor defining size of first Kernel
 #' 
-#' factor defining size of the first kernel, which generate the stucture of dynamic kernel
+#' Factor defining size of the first Kernel, which generates the stucture of dynamic Kernel
 #' 
 #' @title sd1gen
 #' 
@@ -247,7 +247,7 @@ sd1gen <- function(pppm, f_sd1 = 4) {
 
 gau1   <- function(x, sd){
   stats::dnorm(edist(x), mean=0, sd=sd)
-  } 
+} 
 
 #' Euclidian Distance in multidimensional space
 #' 
@@ -264,6 +264,7 @@ gau1   <- function(x, sd){
 #'  x <- c(2,4,1,5,7,8)
 #'  edist(x)
 #' 
+#' @export
 
 edist  <- function(x){
   sqrt((x[1] - x[3])^2 + ((x[2] - x[4])^2))
@@ -289,6 +290,7 @@ edist  <- function(x){
 #'  int <- 7
 #'  kernel.par(xp,s,int)
 #'
+#' @export
 
 kernel.par <- function(xp,s,int){
   x1 <- asin(-s)
@@ -309,8 +311,8 @@ kernel.par <- function(xp,s,int){
 #' 
 #' @title kernel1d
 #' 
-#' @param x 
-#' @param kp 
+#' @param x Variable
+#' @param kp Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
@@ -323,22 +325,22 @@ kernel1d <- function(x,kp){
   c  <- kp[4]
   int  <- kp[5]
   x <- d*c
-  if (x <= xp) {y <- cos(x) + a + (0.7-0.7*x/xp)} # 0,7 -> hight of additional kernell peak
+  if (x <= xp) {y <- cos(x) + a + (0.7-0.7*x/xp)} # 0,7 -> height of additional kernel peak
   if (d > xp)  {y <- 1/(x + b)}
   y <- y*int
   return(y)
 }
 
 
-#' linear function to scale density values
+#' Linear function to scale density values
 #' 
 #' Description
 #' 
 #' @title factor
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 
@@ -347,15 +349,15 @@ factor <- function(x,a,b){
   return(y)
 } 
 
-#' linear function to scale density values
+#' Linear function to scale density values
 #' 
 #' Description
 #' 
 #' @title factor_i
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 
@@ -363,4 +365,4 @@ factor <- function(x,a,b){
 factor_i <- function(x,a,b){
   y <- a+b*x
   return(y)
-  } 
+} 

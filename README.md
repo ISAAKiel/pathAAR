@@ -1,3 +1,5 @@
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
 # pathAAR
 R Package to reconstruct paths using archaeological monuments, model parameters of infrastructure and evaluate those parameters
 
@@ -19,7 +21,7 @@ Installation
 
 Please note, this package is still work in progress! 
 
-`pathAAR::recon_path` is functioning!
+`pathAAR::repath` is functioning!
 
 Licence
 -------
