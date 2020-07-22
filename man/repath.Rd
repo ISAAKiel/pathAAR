@@ -4,7 +4,7 @@
 \alias{repath}
 \title{repath}
 \usage{
-repath(df, sgdf, x = 1, y = 2)
+repath(df, sgdf, x = 1, y = 2, colums)
 }
 \arguments{
 \item{df}{data frame, containing coordinates of path associated features}
@@ -14,6 +14,8 @@ repath(df, sgdf, x = 1, y = 2)
 \item{x}{numeric, indicating column number of x coordinates}
 
 \item{y}{numeric, indicating column number of y coordinates}
+
+\item{colums}{Muss noch in Funktion!}
 }
 \value{
 list, first object "KDE" is a raster object of Kernel Density Estimation, 
