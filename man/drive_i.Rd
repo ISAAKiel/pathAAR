@@ -18,7 +18,7 @@ Costs for Wheeled Vehicles
 \details{
 The `drive_i` function will calculate a cost surface, where costs refer to the use of
 wheeled vehicles with a critical slope value of 8%. Here the 
-adapted function published by Herzog 2012 baesd on Llobera 2007 is used.
+adapted function published by Herzog 2012 based on Llobera 2007 is used.
 
 Note: As gdistance uses resistor instead of cost, the function creates inverse costs
 }

@@ -4,26 +4,26 @@
 \alias{localMax}
 \title{localMax}
 \usage{
-localMax(df, x = 1, y = 2, r = 5000, sw = 10)
+localMax(df, r = 5000, sw = 10, pd = 500)
 }
 \arguments{
 \item{df}{data frame, containing coordinates of path associated features}
 
-\item{x}{numeric, indicating column number of x coordinates}
+\item{r}{numeric, sets the size of moving window and sigma in the used density function in meter, default = 5000}
 
-\item{y}{numeric, indicating column number of y coordinates}
+\item{sw}{numeric, value used for defining threshold for defining a local maximum. A higher value means more local maxima are stored, default = 10. It's suggested not to change this parameter and instead work with the size of the moving window!}
 
-\item{r}{numeric, size of moving window in meter, default = 5000}
+\item{pd}{numeric, dimension of pixels for intermediate raster image of the used density function in meter, default = 500}
 }
 \value{
-SpatialPoints
+SpatialPointsDataFrame with coordinates of local maxima
 }
 \description{
-Local Centers of Infrastructure from Monument Location
+Local Centres of Infrastructure from Monument Location
 }
 \details{
 In absence of known contemporary nodes, like settlements, the density of monument
-locations can be used to reconstruct nodes of infrastructre. This function
+locations can be used to reconstruct nodes of infrastructure. This function
 will use the Kernel Density Approach combined with a moving window, in 
 order to detect nodes in areas with less monuments (from a global perspective).
 }
@@ -31,4 +31,6 @@ order to detect nodes in areas with less monuments (from a global perspective).
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 
 Oliver Nakoinz <\email{oliver.nakoinz.i@gmail.com}>
+
+Hendrik Raese <\email{h.raese@roots.uni-kiel.de}>
 }

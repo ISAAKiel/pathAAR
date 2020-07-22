@@ -38,14 +38,14 @@
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' # Coordinates used to set frame corner for definition of the aspect ratio
 #' sv <- (xmax-xmin)/(ymax-ymin)
 #' rw     <- 5   # width of raster defined in m
 #' 
 #' # Definition of frame expansion and defining frame                              
-# 'rows  <- round((ymax-ymin)/rw, 0) + 1                                  
+#' rows  <- round((ymax-ymin)/rw, 0) + 1                                  
 #' colums <- round((xmax-xmin)/rw, 0) + 1                                     
 #' v <- cbind(1:(colums*rows))                                              
 #' df <- data.frame(v)                                                         
@@ -53,7 +53,7 @@
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
 #' # Initialising observation window for theoretical connections
-#' win <- owin(c(xmin, xmax),c(ymin, ymax))
+#' win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
 #' 
 #' # calculating theoretical connections via delaunay triangulation
 #' theo_con <- theo_del(maxima,win)
@@ -73,8 +73,7 @@
 theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
   
   # Initialise empty raster with same extent and resolution as the elevation raster
-  valrast <- raster::readAll(ras_ai)
-  ras_M1 <- valrast
+  ras_M1 <- ras_ai
   ras_M1@data@values <- NA
   
   # Loop to calculate rWalk for all connections
@@ -158,7 +157,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' # Coordinates used to set frame corner for definition of the aspect ratio
 #' sv <- (xmax-xmin)/(ymax-ymin)
@@ -303,7 +302,7 @@ localMax <- function(df, r=5000, sw=10, pd=500){
   bb <- sp::bbox(sp_g) # setting spatial bounding box for KDE
   win <- spatstat::owin(xrange=c(bb[1,1],bb[1,2]), yrange= c(bb[2,1],bb[2,2]), unitname="m") # calculating observation window
   ppp_g <- spatstat::ppp(sp_g@coords[,1], sp_g@coords[,2], window=win)
-  dens <- density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c((round((win$yrange[2]-win$yrange[1])/pd)),(round((win$xrange[2]-win$xrange[1])/pd))), 
+  dens <- stats::density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c((round((win$yrange[2]-win$yrange[1])/pd)),(round((win$xrange[2]-win$xrange[1])/pd))), 
                   w=win, edge=TRUE, at="pixels") # calculating static KDE
   
   sgdf_dens <- maptools::as.SpatialGridDataFrame.im(dens)
@@ -427,7 +426,7 @@ theo_del <- function(maxima, win){
 #' 
 #' @title hdiff
 #' 
-#' @param s numeric vector
+#' @param x numeric vector
 #'  
 #' @return numeric 
 #'           
@@ -443,7 +442,7 @@ hdiff <- function(x){
 #' 
 #' The `drive_i` function will calculate a cost surface, where costs refer to the use of
 #' wheeled vehicles with a critical slope value of 8%. Here the 
-#' adapted function published by Herzog 2012 baesd on Llobera 2007 is used.
+#' adapted function published by Herzog 2012 based on Llobera 2007 is used.
 #' 
 #' Note: As gdistance uses resistor instead of cost, the function creates inverse costs
 #' 

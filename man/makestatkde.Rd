@@ -9,7 +9,7 @@ makestatkde(pppm, f_sd1 = 4, sgdf, df, x = 1, y = 2, num)
 \arguments{
 \item{pppm}{PointPattern object of Spatial Data}
 
-\item{f_sd1}{factor defining size of the first kernel, which generate the stucture of dynamic kernel}
+\item{f_sd1}{factor defining size of the first kernel, which generate the structure of dynamic kernel}
 
 \item{sgdf}{grid object to store results}
 
@@ -18,6 +18,8 @@ makestatkde(pppm, f_sd1 = 4, sgdf, df, x = 1, y = 2, num)
 \item{x}{numeric, indicating column number of x coordinates}
 
 \item{y}{numeric, indicating column number of y coordinates}
+
+\item{num}{numeric, number of grid cells}
 }
 \value{
 SpatialGrid Object
@@ -36,7 +38,7 @@ xmin    <- 0
 xmax    <- max(testmatrix$x)
 ymin    <- 0
 ymax    <- max(testmatrix$y)
-ext_ai <- extent(xmin, xmax, ymin, ymax)
+ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 
 sv <- (xmax-xmin)/(ymax-ymin)
 rw     <- 10   # width of raster defined in m
