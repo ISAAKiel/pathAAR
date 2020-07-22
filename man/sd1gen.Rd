@@ -28,7 +28,7 @@ xmin    <- 0
 xmax    <- max(testmatrix$x)
 ymin    <- 0
 ymax    <- max(testmatrix$y)
-ext_ai <- extent(xmin, xmax, ymin, ymax)
+ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 
 sv <- (xmax-xmin)/(ymax-ymin)
 rw     <- 10   # width of raster defined in m

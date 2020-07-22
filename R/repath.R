@@ -9,6 +9,7 @@
 #' @param sgdf SpatialGridDataFrame, same extent then area of interest
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
+#' @param colums Muss noch in Funktion!
 #'  
 #' @return list, first object "KDE" is a raster object of Kernel Density Estimation, 
 #'               second object "ras_dens_ridges" coordinates of density ridges
@@ -22,7 +23,7 @@
 #'
 #' @export 
 
-repath <- function(df, sgdf, x = 1, y = 2){
+repath <- function(df, sgdf, x = 1, y = 2, colums){
   
   pppm <- spatstat::ppp(df[,1], df[,2], 
                         window = spatstat::owin(
@@ -112,11 +113,12 @@ repath <- function(df, sgdf, x = 1, y = 2){
 #' @title makestatkde
 #' 
 #' @param pppm PointPattern object of Spatial Data
-#' @param f_sd1 factor defining size of the first kernel, which generate the stucture of dynamic kernel
+#' @param f_sd1 factor defining size of the first kernel, which generate the structure of dynamic kernel
 #' @param sgdf grid object to store results
 #' @param df data frame, containing coordinates of monuments
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
+#' @param num numeric, number of grid cells
 #'  
 #' 
 #' @return SpatialGrid Object  
@@ -132,7 +134,7 @@ repath <- function(df, sgdf, x = 1, y = 2){
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' sv <- (xmax-xmin)/(ymax-ymin)
 #' rw     <- 10   # width of raster defined in m
@@ -193,7 +195,7 @@ makestatkde <- function(pppm, f_sd1=4, sgdf, df, x = 1, y = 2, num){
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' sv <- (xmax-xmin)/(ymax-ymin)
 #' rw     <- 10   # width of raster defined in m

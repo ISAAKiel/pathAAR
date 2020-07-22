@@ -7,7 +7,7 @@
 hdiff(x)
 }
 \arguments{
-\item{s}{numeric vector}
+\item{x}{numeric vector}
 }
 \value{
 numeric

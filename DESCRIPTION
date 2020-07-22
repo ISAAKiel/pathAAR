@@ -14,7 +14,8 @@ Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 Depends: R (>= 2.10),    
-    magrittr
+    magrittr,
+    knitr
 Imports: 
 	raster,
     gdistance,
