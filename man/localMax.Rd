@@ -27,6 +27,31 @@ locations can be used to reconstruct nodes of infrastructure. This function
 will use the Kernel Density Approach combined with a moving window, in 
 order to detect nodes in areas with less monuments (from a global perspective).
 }
+\examples{
+set.seed(123)
+
+# Creating random test data 
+testmatrix <- data.frame(
+ x = abs(runif(100, 1000, 1500)), 
+ y = abs(runif(100, 1000, 1500)))
+
+pd=25
+sw=10
+r=100
+maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
+
+# Plot the result
+maxima <- data.frame(maxima)
+
+ggplot2::ggplot() +
+ ggplot2::geom_point(data= testmatrix, ggplot2::aes(x=x, y=y)) +
+ ggplot2::geom_point(data=maxima, 
+                     ggplot2::aes(x=mx, y=my, color="red"), 
+                     shape=15, 
+                     size=3, 
+                     show.legend = FALSE)
+
+}
 \author{
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 

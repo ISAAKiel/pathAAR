@@ -18,7 +18,7 @@
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
-#' @example
+#' @examples 
 #' 
 #' set.seed(123)
 #' 
@@ -64,7 +64,12 @@
 #' ras_emap <- raster(emap)
 #' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_herzog(ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
+#' theo_run <- theoPath_herzog(ras_ai=ras_emap,
+#'                             method="drive_i",
+#'                             theo_con[[1]], 
+#'                             theta=0.001, 
+#'                             p=5, 
+#'                             type="r")
 #'
 #'@export
 
@@ -106,9 +111,9 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
     ras_M1 <- raster::mosaic(ras_M1, random, fun=max) # summing up expectation of single rWalk connections
   }
   
-  plot(ras_M1)
+  raster::plot(ras_M1)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_method); rm(valrast)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_method)
   
   return(ras_M1)
   
@@ -137,7 +142,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
-#' @example
+#' @examples
 #' 
 #' set.seed(123)
 #' 
@@ -186,18 +191,23 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' para <- ras_sgdf
 #' para@data@values[which(para@data@values <0 )] <- 0
 #' para@data@values <- para@data@values/ max(para@data@values)
-#' plot(para)
+#' raster::plot(para)
 #' 
 #' # Run the function with chosen parameters for method, theta and p
-#' theo_run <- theoPath_param(ras_ai=ras_emap, ras_para=para, method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
+#' theo_run <- theoPath_param(ras_ai=ras_emap, 
+#'                            ras_para=para, 
+#'                            method="drive_i",
+#'                            theo_con[[1]], 
+#'                            theta=0.001, 
+#'                            p=5, 
+#'                            type="r")
 #'
 #'@export
 
 theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
   
   # Initialise empty raster with same extent and resolution as the elevation raster
-  valrast <- raster::readAll(ras_ai)
-  ras_M3 <- valrast
+  ras_M3 <- ras_ai
   ras_M31000 <- ras_M3
   ras_M3@data@values <- NA
   ras_M31000@data@values <- NA
@@ -244,10 +254,10 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
     ras_M31000 <- raster::mosaic(ras_M31000, random, fun=max) # summing up expectation of single rWalk connections
   }
   
-  plot(ras_M3)
-  plot(ras_M31000)
+  raster::plot(ras_M3)
+  raster::plot(ras_M31000)
   
-  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_methoda); rm(cost_methodb); rm(ras_par); rm(adj_par); rm(cost_par); rm(valrast)
+  rm(random); rm(to); rm(from); rm(tran_hdiff); rm(slope); rm(cost_methoda); rm(cost_methodb); rm(ras_par); rm(adj_par); rm(cost_par)
   
   FAC <- list("param"=ras_M3, "param_1000"=ras_M31000)
   
@@ -277,7 +287,7 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
-#' @example 
+#' @examples 
 #' set.seed(123)
 #'
 #' # Creating random test data 
@@ -292,7 +302,14 @@ theoPath_param <- function(ras_ai, ras_para, con, method, theta, p, type="c"){
 #' 
 #' # Plot the result
 #' maxima <- data.frame(maxima)
-#' ggplot() +geom_point(data= testmatrix, aes(x=x, y=y))+ geom_point(data=maxima,aes(x=mx, y=my, color="red"), shape=15, size=3, show.legend = FALSE)
+#' 
+#' ggplot2::ggplot() +
+#'  ggplot2::geom_point(data= testmatrix, ggplot2::aes(x=x, y=y)) +
+#'  ggplot2::geom_point(data=maxima, 
+#'                      ggplot2::aes(x=mx, y=my, color="red"), 
+#'                      shape=15, 
+#'                      size=3, 
+#'                      show.legend = FALSE)
 #' 
 #' @export
 
@@ -360,19 +377,19 @@ localMax <- function(df, r=5000, sw=10, pd=500){
 #' @param maxima SpatialPoints object
 #' @param win owin object
 #'  
-#' @return 
+#' @return list with nodes and edges of centers of infrastructure
 #'           
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
+#' @export
 
 theo_del <- function(maxima, win){
-  library("sp")
   # Delaunay Triangulation to detect possible Connections
   ppp_max <- spatstat::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for Delauny function
   max_del <- spatstat::delaunay(ppp_max)
-  sp_con <- as(max_del, "SpatialPolygons") #converting tess object to a polygon
-  sl_con <- as(sp_con, "SpatialLines")
+  sp_con <- methods::as(max_del, "SpatialPolygons") #converting tess object to a polygon
+  sl_con <- methods::as(sp_con, "SpatialLines")
   
   # according to the documentation the function fortify may be deprecated in the future, maybe it should be replaced with the appropriate function from the 'broom' package as described by ggplot2 documentation. BUT: In the broom package documentation it is stated that development of sp tidier is halted and may be deprecated in the future. They propose changing to sf instead of sp. That would effect the whole package here...  
   con <- ggplot2::fortify(sp_con) # converting polygon to a data frame 
@@ -401,7 +418,7 @@ theo_del <- function(maxima, win){
   con$xmax <- ifelse(con$xFrom > con$xTo, con$xFrom, con$xTo) 
   con$ymin <- ifelse(con$yFrom < con$yTo, con$yFrom, con$yTo)
   con$ymax <- ifelse(con$yFrom > con$yTo, con$yFrom, con$yTo) 
-  # Deleting long conection, which is represented by others but to long for a rWalk calculation
+  # Deleting long connection, which is represented by others but to long for a rWalk calculation
   for(i in 1:length(con[,1])){
     con$dis[i] <- round(sqrt(((con$xmax[i]-con$xmin[i])^2)+((con$ymax[i]-con$ymin[i])^2)))
   }
@@ -412,7 +429,7 @@ theo_del <- function(maxima, win){
   con <- con[!con$delete %in% a ,]
   
   CONN <- list(con, sl_con)
-  plot(sl_con)
+  graphics::plot(sl_con)
   return(CONN)
   
 }

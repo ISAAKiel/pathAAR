@@ -12,7 +12,7 @@ theo_del(maxima, win)
 \item{win}{owin object}
 }
 \value{
-
+list with nodes and edges of centers of infrastructure
 }
 \description{
 Calculating a Delaunay triangulation and preparing coordinates for rWalk loops

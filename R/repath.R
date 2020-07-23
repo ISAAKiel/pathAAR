@@ -18,8 +18,6 @@
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
-#' @examples
-#' 
 #'
 #' @export 
 

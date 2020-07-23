@@ -28,10 +28,6 @@ Reconstructing Empirical Pathes
 The `repath` function will calculate density ridges out of the location from 
 path associated features.
 }
-\examples{
-
-
-}
 \author{
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 

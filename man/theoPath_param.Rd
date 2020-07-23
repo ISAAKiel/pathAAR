@@ -30,6 +30,66 @@ Theoretical Paths using cost functions defined by Herzog 2012 with additional co
 \details{
 If there are no actual parts of a path network known, the `theoPath_herzog_param` function can be used to reconstruct pathways based on randomised shortest paths connecting known regions with higher densities of sites, e.g. monuments. An underlying cost surface is created by using the cost functions defined by I. Herzog (2012) either for walking or driving. By supplying an additional parameter (visibility, friction costs, etc.), hypotheses on the influence of different variables can be tested. This function is a useful step in the evaluation of reconstructed paths.
 }
+\examples{
+
+set.seed(123)
+
+# Creating random test data 
+testmatrix <- data.frame(
+ x = abs(runif(100, 1000, 1500)), 
+ y = abs(runif(100, 1000, 1500)))
+
+# Calculate local centres of infrastructure from monument location
+pd=25
+sw=10
+r=100
+maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
+
+# Setting geographical frame
+xmin    <- 0
+xmax    <- max(testmatrix$x)
+ymin    <- 0
+ymax    <- max(testmatrix$y)
+ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
+
+# Coordinates used to set frame corner for definition of the aspect ratio
+sv <- (xmax-xmin)/(ymax-ymin)
+rw     <- 5   # width of raster defined in m
+
+# Definition of frame expansion and defining frame                              
+colums <- round((xmax-xmin)/rw, 0) + 1                                     
+v <- cbind(1:(colums*rows))                                              
+df <- data.frame(v)                                                         
+gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
+sgdf    <- sp::SpatialGridDataFrame(gt, df)
+
+# Initialising observation window for theoretical connections
+win <- owin(c(xmin, xmax),c(ymin, ymax))
+
+# calculating theoretical connections via delaunay triangulation
+theo_con <- theo_del(maxima,win)
+
+# Setting up an artificial elevation map with random values
+emap <- sgdf
+emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
+ras_emap <- raster(emap)
+
+# Friction Raster for preferring lowlands:
+para <- ras_sgdf
+para@data@values[which(para@data@values <0 )] <- 0
+para@data@values <- para@data@values/ max(para@data@values)
+raster::plot(para)
+
+# Run the function with chosen parameters for method, theta and p
+theo_run <- theoPath_param(ras_ai=ras_emap, 
+                           ras_para=para, 
+                           method="drive_i",
+                           theo_con[[1]], 
+                           theta=0.001, 
+                           p=5, 
+                           type="r")
+
+}
 \author{
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 
