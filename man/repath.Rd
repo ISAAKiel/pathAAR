@@ -9,7 +9,7 @@ repath(df, sgdf, x = 1, y = 2, colums)
 \arguments{
 \item{df}{data frame, containing coordinates of path associated features}
 
-\item{sgdf}{SpatialGridDataFrame, same extent then area of interest}
+\item{sgdf}{SpatialGridDataFrame, same extent as area of interest}
 
 \item{x}{numeric, indicating column number of x coordinates}
 

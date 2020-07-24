@@ -1,7 +1,6 @@
 library(devtools)
 
 install_github("ISAAKiel/pathAAR")
-
 library(pathAAR)
 
  set.seed(123)
@@ -18,9 +17,9 @@ library(pathAAR)
  maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
  
  # Setting geographical frame
- xmin    <- 0
+ xmin    <- min(testmatrix$x)
  xmax    <- max(testmatrix$x)
- ymin    <- 0
+ ymin    <- min(testmatrix$y)
  ymax    <- max(testmatrix$y)
  ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
  
@@ -42,10 +41,26 @@ library(pathAAR)
  # calculating theoretical connections via delaunay triangulation
  theo_con <- theo_del(maxima,win)
  
+ 
  # Setting up an artificial elevation map with random values
  emap <- sgdf
- emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
+ emap@data$v <- sample((50:56), length(emap@data$v), replace=TRUE)
  ras_emap <- raster::raster(emap)
  
  theo_run <- theoPath_herzog(ras_ai=ras_emap,method="drive_i",theo_con[[1]], theta=0.001, p=5, type="r")
  
+  # Friction Raster for preferring lowlands:
+  para <- ras_emap
+  para@data@values[which(para@data@values <0 )] <- 0
+  para@data@values <- para@data@values/ max(para@data@values)
+  raster::plot(para)
+  
+  # Run the function with chosen parameters for method, theta and p
+  theo_run <- theoPath_param(ras_ai=ras_emap, 
+                             ras_para=para, 
+                             method="drive_i",
+                             theo_con[[1]], 
+                             theta=0.001, 
+                             p=5, 
+                             type="r")
+  

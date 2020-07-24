@@ -44,9 +44,9 @@ r=100
 maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 
 # Setting geographical frame
-xmin    <- 0
+xmin    <- min(testmatrix$x)
 xmax    <- max(testmatrix$x)
-ymin    <- 0
+ymin    <- min(testmatrix$y)
 ymax    <- max(testmatrix$y)
 ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 
@@ -65,13 +65,13 @@ sgdf    <- sp::SpatialGridDataFrame(gt, df)
 # Initialising observation window for theoretical connections
 win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
 
-# calculating theoretical connections via delaunay triangulation
+# calculating theoretical connections via Delaunay triangulation
 theo_con <- theo_del(maxima,win)
 
 # Setting up an artificial elevation map with random values
 emap <- sgdf
-emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
-ras_emap <- raster(emap)
+emap@data$v <- sample((50:56), length(emap@data$v), replace=TRUE)
+ras_emap <- raster::raster(emap)
 
 # Run the function with chosen parameters for method, theta and p
 theo_run <- theoPath_herzog(ras_ai=ras_emap,

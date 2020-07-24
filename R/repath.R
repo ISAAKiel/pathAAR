@@ -6,7 +6,7 @@
 #' @title repath
 #' 
 #' @param df data frame, containing coordinates of path associated features
-#' @param sgdf SpatialGridDataFrame, same extent then area of interest
+#' @param sgdf SpatialGridDataFrame, same extent as area of interest
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
 #' @param colums Muss noch in Funktion!

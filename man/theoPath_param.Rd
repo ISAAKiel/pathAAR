@@ -19,7 +19,7 @@ theoPath_param(ras_ai, ras_para, con, method, theta, p, type = "c")
 
 \item{p}{numeric, buffer zone around rWalk rasters, used in loop}
 
-\item{type}{chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection}
+\item{type}{chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be chosen. For further informations see ?gdistance::geoCorrection}
 }
 \value{
 List, two RasterLayer with values of summed up expectations of single rWalk connections. The item param with 0.1x the influence of the supplied parameter and param_1000 with 100x the influence of the supplied parameter and 10x the value of theta.
@@ -46,9 +46,9 @@ r=100
 maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 
 # Setting geographical frame
-xmin    <- 0
+xmin    <- min(testmatrix$x)
 xmax    <- max(testmatrix$x)
-ymin    <- 0
+ymin    <- min(testmatrix$y)
 ymax    <- max(testmatrix$y)
 ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 
@@ -57,6 +57,7 @@ sv <- (xmax-xmin)/(ymax-ymin)
 rw     <- 5   # width of raster defined in m
 
 # Definition of frame expansion and defining frame                              
+rows  <- round((ymax-ymin)/rw, 0) + 1                                    
 colums <- round((xmax-xmin)/rw, 0) + 1                                     
 v <- cbind(1:(colums*rows))                                              
 df <- data.frame(v)                                                         
@@ -64,18 +65,18 @@ gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
 sgdf    <- sp::SpatialGridDataFrame(gt, df)
 
 # Initialising observation window for theoretical connections
-win <- owin(c(xmin, xmax),c(ymin, ymax))
+win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
 
 # calculating theoretical connections via delaunay triangulation
 theo_con <- theo_del(maxima,win)
 
 # Setting up an artificial elevation map with random values
 emap <- sgdf
-emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
-ras_emap <- raster(emap)
+emap@data$v <- sample((50:56), length(emap@data$v), replace=TRUE)
+ras_emap <- raster::raster(emap)
 
 # Friction Raster for preferring lowlands:
-para <- ras_sgdf
+para <- ras_emap
 para@data@values[which(para@data@values <0 )] <- 0
 para@data@values <- para@data@values/ max(para@data@values)
 raster::plot(para)

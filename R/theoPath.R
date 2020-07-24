@@ -34,9 +34,9 @@
 #' maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 #' 
 #' # Setting geographical frame
-#' xmin    <- 0
+#' xmin    <- min(testmatrix$x)
 #' xmax    <- max(testmatrix$x)
-#' ymin    <- 0
+#' ymin    <- min(testmatrix$y)
 #' ymax    <- max(testmatrix$y)
 #' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
@@ -55,13 +55,13 @@
 #' # Initialising observation window for theoretical connections
 #' win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
 #' 
-#' # calculating theoretical connections via delaunay triangulation
+#' # calculating theoretical connections via Delaunay triangulation
 #' theo_con <- theo_del(maxima,win)
 #' 
 #' # Setting up an artificial elevation map with random values
 #' emap <- sgdf
-#' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
-#' ras_emap <- raster(emap)
+#' emap@data$v <- sample((50:56), length(emap@data$v), replace=TRUE)
+#' ras_emap <- raster::raster(emap)
 #' 
 #' # Run the function with chosen parameters for method, theta and p
 #' theo_run <- theoPath_herzog(ras_ai=ras_emap,
@@ -134,7 +134,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' @param method chr, either "walk_i" for pedestrians or "drive_i" for vehicles. For further informations look up the respective functions
 #' @param theta numeric, parameter controls randomisation of walk. Lower values equal more exploration of the walker around the shortest path, while if theta approaches zero the walk becomes totally random 
 #' @param p numeric, buffer zone around rWalk rasters, used in loop
-#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be choosed. For further informations see ?gdistance::geoCorrection
+#' @param type chr, either "c" (default) for least-cost distances or "r" for random walks. As stated by J. van Etten, there is no analytical way as of now to decide for intermediate values of theta which type should be chosen. For further informations see ?gdistance::geoCorrection
 #'  
 #' @return List, two RasterLayer with values of summed up expectations of single rWalk connections. The item param with 0.1x the influence of the supplied parameter and param_1000 with 100x the influence of the supplied parameter and 10x the value of theta.
 #'           
@@ -158,9 +158,9 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' maxima <- localMax(df=testmatrix, r=r, sw=sw, pd=pd)
 #' 
 #' # Setting geographical frame
-#' xmin    <- 0
+#' xmin    <- min(testmatrix$x)
 #' xmax    <- max(testmatrix$x)
-#' ymin    <- 0
+#' ymin    <- min(testmatrix$y)
 #' ymax    <- max(testmatrix$y)
 #' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
@@ -169,7 +169,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' rw     <- 5   # width of raster defined in m
 #' 
 #' # Definition of frame expansion and defining frame                              
-# 'rows  <- round((ymax-ymin)/rw, 0) + 1                                    
+#' rows  <- round((ymax-ymin)/rw, 0) + 1                                    
 #' colums <- round((xmax-xmin)/rw, 0) + 1                                     
 #' v <- cbind(1:(colums*rows))                                              
 #' df <- data.frame(v)                                                         
@@ -177,18 +177,18 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
 #' # Initialising observation window for theoretical connections
-#' win <- owin(c(xmin, xmax),c(ymin, ymax))
+#' win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
 #' 
 #' # calculating theoretical connections via delaunay triangulation
 #' theo_con <- theo_del(maxima,win)
 #' 
 #' # Setting up an artificial elevation map with random values
 #' emap <- sgdf
-#' emap@data$v <- sample((50:56), length(emap@data$v), replace=T)
-#' ras_emap <- raster(emap)
+#' emap@data$v <- sample((50:56), length(emap@data$v), replace=TRUE)
+#' ras_emap <- raster::raster(emap)
 #' 
 #' # Friction Raster for preferring lowlands:
-#' para <- ras_sgdf
+#' para <- ras_emap
 #' para@data@values[which(para@data@values <0 )] <- 0
 #' para@data@values <- para@data@values/ max(para@data@values)
 #' raster::plot(para)
@@ -429,7 +429,7 @@ theo_del <- function(maxima, win){
   con <- con[!con$delete %in% a ,]
   
   CONN <- list(con, sl_con)
-  graphics::plot(sl_con)
+  sp::plot(sl_con)
   return(CONN)
   
 }
