@@ -10,7 +10,7 @@
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
 #' @param path_par numeric vector, containing a set of modelling parameters: 
-#'	path_par[1]  tresh  = treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+#'	path_par[1]  tresh  = threshold, to delete paths in areas with really low density values (KDE), meaning calculation artefacts 
 #'	path_par[2]  f1 = factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
 #'	path_par[3]  f2 = factor defining the maximum border of dynamic kernel f2*mean(nn)
 #'	path_par[4]  f3 = minimal intensity of Kernel
@@ -52,7 +52,7 @@ repath <- function(df,
                           y = 2, 
                           num = num)
   iter  <- 2
-  tresh  <- path_par[1]     # treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+  tresh  <- path_par[1]     # threshold, to delete paths in areas with really low density values (KDE), meaning calculation artefacts 
   f1     <- path_par[2]     # factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
   f2     <- path_par[3]     # factor defining the maximum border of dynamic kernel f2*mean(nn)
   f3     <- path_par[4]     # minimal intensity of Kernel
@@ -214,7 +214,7 @@ repath <- function(df,
 #' @export
 
 makestatkde <- function(pppm, 
-                        f_sd1=4, 
+                        f_sd1 = 4, 
                         sgdf, 
                         df, 
                         x = 1, 
