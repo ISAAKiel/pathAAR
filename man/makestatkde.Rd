@@ -63,4 +63,6 @@ base_kde <- makestatkde(pppm, sgdf=sgdf, df=testmatrix, x=1, y=2, num=length(df[
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 
 Oliver Nakoinz <\email{oliver.nakoinz.i@gmail.com}>
+
+Hendrik Raese <\email{h.raese@roots.uni-kiel.de}>
 }

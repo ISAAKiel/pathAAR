@@ -4,7 +4,13 @@
 \alias{repath}
 \title{repath}
 \usage{
-repath(df, sgdf, x = 1, y = 2, colums)
+repath(
+  df,
+  sgdf,
+  x = 1,
+  y = 2,
+  path_par = cbind(c(0.05, 0.2, 0.4, 0.5, 1, -0.3, 9))
+)
 }
 \arguments{
 \item{df}{data frame, containing coordinates of path associated features}
@@ -15,7 +21,14 @@ repath(df, sgdf, x = 1, y = 2, colums)
 
 \item{y}{numeric, indicating column number of y coordinates}
 
-\item{colums}{Muss noch in Funktion!}
+\item{path_par}{numeric vector, containing a set of modelling parameters: 
+path_par[1]  tresh  = treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+path_par[2]  f1 = factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
+path_par[3]  f2 = factor defining the maximum border of dynamic kernel f2*mean(nn)
+path_par[4]  f3 = minimal intensity of Kernel
+path_par[5]  f4 = maximal intensity of Kernel
+path_par[6]  s = Kernelparameter: incline starting from point 1
+path_par[7]  mwin = Moving-window-size for ridge detection (4,9,16)}
 }
 \value{
 list, first object "KDE" is a raster object of Kernel Density Estimation, 
@@ -31,5 +44,7 @@ path associated features.
 \author{
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 
-Oliver Nakoinz <\email{oliver.nakoinz.i@gmail.com}>
+Oliver Nakoinz <\email{oliver.nakoinz@ufg.uni-kiel.de}>
+
+Hendrik Raese <\email{h.raese@roots.uni-kiel.de}>
 }

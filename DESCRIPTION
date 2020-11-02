@@ -21,11 +21,10 @@ Imports:
     spatstat,
     ggplot2,
 	maptools,
-	methods,
-	magrittr,
-    knitr
+	methods
 Suggests:
 	rgdal,
 	spdep,
-	testthat
+	testthat,
+	knitr
 RoxygenNote: 7.1.1

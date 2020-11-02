@@ -6,17 +6,17 @@
 #' @title repath
 #' 
 #' @param df data frame, containing coordinates of path associated features
-#' @param sgdf SpatialGridDataFrame, same extent then area of interest
+#' @param sgdf SpatialGridDataFrame, same extent as area of interest
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
 #' @param path_par numeric vector, containing a set of modelling parameters: 
-#'	path_par[1] = tresh  = treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
-#'	path_par[2] = f1 = factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
-#'	path_par[3] = f2 = factor defining the maximum border of dynamic kernel f2*mean(nn)
-#'	path_par[4] = f3 = minimal intensity of Kernel
-#'	path_par[5] = f4 = maximal intensity of Kernel
-#'	path_par[6] = s = Kernelparameter: incline starting from point 1
-#'	path_par[7] = mwin = Moving-window-size for ridge detection (4,9,16)
+#'	path_par[1]  tresh  = treshold, to delete phaths in areas with really low density values (KDE), meaning calculation artefacts 
+#'	path_par[2]  f1 = factor defining the minimum border of dynamic kernel (raster width) f1*mean(nn)  ## 0.2
+#'	path_par[3]  f2 = factor defining the maximum border of dynamic kernel f2*mean(nn)
+#'	path_par[4]  f3 = minimal intensity of Kernel
+#'	path_par[5]  f4 = maximal intensity of Kernel
+#'	path_par[6]  s = Kernelparameter: incline starting from point 1
+#'	path_par[7]  mwin = Moving-window-size for ridge detection (4,9,16)
 #'  
 #' @return list, first object "KDE" is a raster object of Kernel Density Estimation, 
 #'               second object "ras_dens_ridges" coordinates of density ridges
@@ -25,8 +25,6 @@
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
 #' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
-#' 
-#' @examples
 #' 
 #'
 #' @export 
@@ -97,6 +95,8 @@ repath <- function(df,
     ras        <- dyn_kde
     ras_ridges@data$v <- 1
     ras@data$v[is.na(ras@data$v)] <- 10000000000
+    
+    colums <- as.numeric(ras@grid@cells.dim[1])
     
     if (mwin==4){
       for (i in 1:(length(ras@data$v) - colums))  {
@@ -169,17 +169,18 @@ repath <- function(df,
 #' @title makestatkde
 #' 
 #' @param pppm PointPattern object of Spatial Data
-#' @param f_sd1 factor defining size of the first kernel, which generate the stucture of dynamic kernel
+#' @param f_sd1 factor defining size of the first kernel, which generate the structure of dynamic kernel
 #' @param sgdf grid object to store results
 #' @param df data frame, containing coordinates of monuments
 #' @param x numeric, indicating column number of x coordinates
 #' @param y numeric, indicating column number of y coordinates
+#' @param num numeric, number of grid cells
 #'  
 #' 
 #' @return SpatialGrid Object  
 #'
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
 #' @examples
@@ -190,7 +191,7 @@ repath <- function(df,
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' sv <- (xmax-xmin)/(ymax-ymin)
 #' rw     <- 10   # width of raster defined in m
@@ -252,7 +253,7 @@ makestatkde <- function(pppm,
 #' @return list containg two numeric  
 #'
 #' @author Franziska Faupel <\email{ffaupel@@ufg.uni-kiel.de}>
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' @author Hendrik Raese <\email{h.raese@@roots.uni-kiel.de}>
 #' 
 #' @examples
@@ -263,7 +264,7 @@ makestatkde <- function(pppm,
 #' xmax    <- max(testmatrix$x)
 #' ymin    <- 0
 #' ymax    <- max(testmatrix$y)
-#' ext_ai <- extent(xmin, xmax, ymin, ymax)
+#' ext_ai <- raster::extent(xmin, xmax, ymin, ymax)
 #' 
 #' sv <- (xmax-xmin)/(ymax-ymin)
 #' rw     <- 10   # width of raster defined in m
@@ -306,7 +307,7 @@ sd1gen<- function(pppm, f_sd1 = 4) {
 #' 
 #' @return density value of normal distribution
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 #' @examples
 #'  
@@ -331,13 +332,14 @@ gau1   <- function(x,
 #' 
 #' @param x numeric
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 #' @examples
 #'  
 #'  x <- c(2,4,1,5,7,8)
 #'  edist(x)
 #' 
+#' @export
 
 edist  <- function(x){
   sqrt((x[1] - x[3])^2 + ((x[2] - x[4])^2))
@@ -354,7 +356,7 @@ edist  <- function(x){
 #' @param s numeric, Kernelparameter: incline starting from point 1
 #' @param int numeric, scaled density values
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 #' @examples
 #'  
@@ -363,6 +365,7 @@ edist  <- function(x){
 #'  int <- 7
 #'  kernel.par(xp,s,int)
 #'
+#' @export
 
 kernel.par <- function(xp, 
                        s,
@@ -382,16 +385,17 @@ kernel.par <- function(xp,
 }
 
 
+
 #' KDE Function 
 #' 
 #' Description
 #' 
 #' @title kernel1d
 #' 
-#' @param x 
-#' @param kp 
+#' @param x Variable
+#' @param kp Variable
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 #' 
 
 kernel1d <- function(x, 
@@ -416,11 +420,11 @@ kernel1d <- function(x,
 #' 
 #' @title factor
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
 
 factor <- function(x,
                    a,
@@ -435,11 +439,12 @@ factor <- function(x,
 #' 
 #' @title factor_i
 #' 
-#' @param x 
-#' @param a
-#' @param b
+#' @param x Variable
+#' @param a Variable
+#' @param b Variable
 #'
-#' @author Oliver Nakoinz <\email{oliver.nakoinz@@ufg.uni-kiel.de}>
+#' @author Oliver Nakoinz <\email{oliver.nakoinz.i@@gmail.com}>
+
 
 factor_i <- function(x,
                      a,

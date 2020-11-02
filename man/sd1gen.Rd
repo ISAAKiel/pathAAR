@@ -53,4 +53,6 @@ f_sd1 <- sd1gen(pppm)
 Franziska Faupel <\email{ffaupel@ufg.uni-kiel.de}>
 
 Oliver Nakoinz <\email{oliver.nakoinz.i@gmail.com}>
+
+Hendrik Raese <\email{h.raese@roots.uni-kiel.de}>
 }
