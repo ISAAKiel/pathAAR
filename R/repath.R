@@ -35,8 +35,8 @@ repath <- function(df,
                    y = 2, 
                    path_par = cbind(c(0.05, 0.2, 0.4, 0.5, 1, -0.3, 9))){
   
-  pppm <- spatstat::ppp(df[,1], df[,2], 
-                        window = spatstat::owin(
+  pppm <- spatstat.geom::ppp(df[,1], df[,2], 
+                        window = spatstat.geom::owin(
                           xrange = c(sgdf@bbox[1,1],
                                      sgdf@bbox[1,2]),
                           yrange = c(sgdf@bbox[2,1],
@@ -203,8 +203,8 @@ repath <- function(df,
 #' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
-#' pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2], 
-#'                        window = spatstat::owin(
+#' pppm <- spatstat.geom::ppp(testmatrix[,1], testmatrix[,2], 
+#'                        window = spatstat.geom::owin(
 #'                        xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
 #'                        yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
 #'                        unitname="m"))
@@ -276,8 +276,8 @@ makestatkde <- function(pppm,
 #' gt      <- sp::GridTopology(c(xmin, ymin), c(rw, rw), c(colums, rows))
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
-#' pppm <- spatstat::ppp(testmatrix[,1], testmatrix[,2], 
-#'                        window = spatstat::owin(
+#' pppm <- spatstat.geom::ppp(testmatrix[,1], testmatrix[,2], 
+#'                        window = spatstat.geom::owin(
 #'                        xrange=c(sgdf@bbox[1,1],sgdf@bbox[1,2]),
 #'                        yrange=c(sgdf@bbox[2,1],sgdf@bbox[2,2]), 
 #'                        unitname="m"))
@@ -287,8 +287,8 @@ makestatkde <- function(pppm,
 #' @export
 
 sd1gen<- function(pppm, f_sd1 = 4) {
-  sd1  <- f_sd1 * mean(spatstat::nndist(pppm))
-  nn   <- mean(spatstat::nndist(pppm))
+  sd1  <- f_sd1 * mean(spatstat.geom::nndist(pppm))
+  nn   <- mean(spatstat.geom::nndist(pppm))
   sd1  <- list(sd1, 
                nn)
   return(sd1)

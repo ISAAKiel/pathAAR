@@ -53,7 +53,7 @@
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
 #' # Initialising observation window for theoretical connections
-#' win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
+#' win <- spatstat.geom::owin(c(xmin, xmax),c(ymin, ymax))
 #' 
 #' # calculating theoretical connections via Delaunay triangulation
 #' theo_con <- theo_del(maxima,win)
@@ -177,7 +177,7 @@ theoPath_herzog <- function(ras_ai, con, method, theta, p, type="c"){
 #' sgdf    <- sp::SpatialGridDataFrame(gt, df)
 #' 
 #' # Initialising observation window for theoretical connections
-#' win <- spatstat::owin(c(xmin, xmax),c(ymin, ymax))
+#' win <- spatstat.geom::owin(c(xmin, xmax),c(ymin, ymax))
 #' 
 #' # calculating theoretical connections via delaunay triangulation
 #' theo_con <- theo_del(maxima,win)
@@ -317,8 +317,8 @@ localMax <- function(df, r=5000, sw=10, pd=500){
   sp_g <- sp::SpatialPoints(cbind(df[,1], df[,2]))
   # calculating static KDE
   bb <- sp::bbox(sp_g) # setting spatial bounding box for KDE
-  win <- spatstat::owin(xrange=c(bb[1,1],bb[1,2]), yrange= c(bb[2,1],bb[2,2]), unitname="m") # calculating observation window
-  ppp_g <- spatstat::ppp(sp_g@coords[,1], sp_g@coords[,2], window=win)
+  win <- spatstat.geom::owin(xrange=c(bb[1,1],bb[1,2]), yrange= c(bb[2,1],bb[2,2]), unitname="m") # calculating observation window
+  ppp_g <- spatstat.geom::ppp(sp_g@coords[,1], sp_g@coords[,2], window=win)
   dens <- stats::density(ppp_g, kernel="gaussian", sigma=r/2, dimyx=c((round((win$yrange[2]-win$yrange[1])/pd)),(round((win$xrange[2]-win$xrange[1])/pd))), 
                   w=win, edge=TRUE, at="pixels") # calculating static KDE
   
@@ -386,8 +386,8 @@ localMax <- function(df, r=5000, sw=10, pd=500){
 
 theo_del <- function(maxima, win){
   # Delaunay Triangulation to detect possible Connections
-  ppp_max <- spatstat::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for Delauny function
-  max_del <- spatstat::delaunay(ppp_max)
+  ppp_max <- spatstat.geom::ppp(maxima@coords[,1],maxima@coords[,2], window=win) #ppp are needed for Delauny function
+  max_del <- spatstat.geom::delaunay(ppp_max)
   sp_con <- methods::as(max_del, "SpatialPolygons") #converting tess object to a polygon
   sl_con <- methods::as(sp_con, "SpatialLines")
   
